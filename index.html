@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLACIER - Distributor Es Krim</title>
+    <link rel="stylesheet" href="index-style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">
+                <img src="asset/Logo.png" alt="GLACIER Logo">
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#produk" class="nav-link">Product</a></li>
+                <li class="nav-item"><a href="#kontak" class="nav-link">Contact Me</a></li>
+            </ul>
+            
+            <div class="nav-user-area" id="nav-user-area">
+                </div>
+
+            <div class="nav-cart" id="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge" id="cart-badge">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Rasa Premium, Harga Distributor</h1>
+            <p>Es krim terbaik untuk bisnis HORECA Anda.</p>
+            <a href="#produk" class="btn-hero">Lihat Produk</a>
+        </div>
+    </section>
+
+    <section id="produk" class="product-section">
+        <h2>Produk GLACIER</h2>
+        <div class="product-grid" id="product-grid">
+            </div>
+    </section>
+
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h2>Keranjang Anda</h2>
+            <div id="cart-items-container">
+                </div>
+            <div class="cart-total">
+                <strong>Total: <span id="cart-total-price">Rp 0</span></strong>
+            </div>
+            <button class="btn-checkout" id="checkout-button">Checkout</button>
+        </div>
+    </div>
+
+
+    <footer id="kontak">
+        <p>&copy; 2025 GLACIER. Dibuat dengan ❤️</p>
+    </footer>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<script src="app.js"></script>
+</body>
+</html>

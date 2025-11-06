@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to right, #FFC1CC, #FFFDD0, #AEC6CF); /* Gradasi warna es krim */
+    background-size: cover;
+    color: #fff;
+}
+
+.login-container {
+    background: rgba(0, 0, 0, 0.6); /* Overlay transparan */
+    backdrop-filter: blur(8px); /* Efek blur ala Netflix */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.logo {
+    width: 150px; /* Sesuaikan ukuran logo Anda */
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 2em;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group input {
+    width: calc(100% - 20px);
+    padding: 15px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1); /* Input transparan */
+    color: #fff;
+    font-size: 1em;
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    background-color: #ff0073; /* Merah ala Netflix, atau warna es krim cerah */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #ea00ff;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    margin-top: 15px;
+    color: #aaa;
+}
+
+.options a {
+    color: #aaa;
+    text-decoration: none;
+}
+
+.options a:hover {
+    text-decoration: underline;
+}
+
+.options input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.signup-link {
+    margin-top: 30px;
+    font-size: 1em;
+    color: #aaa;
+}
+
+.signup-link a {
+    color: #fff; /* Atau warna lain yang kontras */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+.admin-login-info {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    font-size: 0.8em;
+    color: #ccc;
+}
+/* ... (Kode CSS dari halaman login sebelumnya) ... */
+
+/* Tambahan untuk halaman Register */
+.options-register {
+    text-align: left;
+    font-size: 0.9em;
+    margin-top: 15px;
+    color: #aaa;
+}
+
+.options-register a {
+    color: #fff; /* Biar link-nya jelas */
+    text-decoration: none;
+}
+
+.options-register a:hover {
+    text-decoration: underline;
+}
+
+.options-register input[type="checkbox"] {
+    margin-right: 5px;
+}
+/* Untuk halaman register, Anda bisa copy paste CSS ini atau membuat CSS terpisah */
+/* Pastikan ada file register.html yang mirip dengan login.html */

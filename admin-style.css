@@ -1,0 +1,272 @@
+/* =======================
+   RESET & BODY
+======================== */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5; 
+    color: #333;
+}
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+/* =======================
+   SIDEBAR MENU
+======================== */
+.sidebar {
+    width: 250px;
+    background-color: #2c3e50; 
+    color: #ecf0f1;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-logo {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #34495e;
+}
+.sidebar-logo img { height: 60px; margin-bottom: 10px; }
+.sidebar-logo span { font-size: 1.2rem; font-weight: bold; display: block; color: #fff; }
+.sidebar-menu { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; }
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: #ecf0f1;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+.sidebar-menu li a i { margin-right: 15px; width: 20px; text-align: center; }
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    background-color: #34495e; 
+    border-left: 3px solid #E50914; 
+}
+/* =======================
+   MAIN CONTENT
+======================== */
+.main-content { flex: 1; display: flex; flex-direction: column; }
+.header {
+    background-color: #fff;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+.header h2 { margin: 0; font-size: 1.5rem; }
+.header-user { font-weight: bold; }
+/* ... (kode .header-user) ... */
+
+.product-selector {
+    margin-left: 20px;
+}
+.product-selector label {
+    font-size: 0.9rem;
+    color: #555;
+    margin-right: 10px;
+}
+#product-view-select {
+    font-size: 1rem;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+/* =======================
+   KARTU INTERAKTIF
+======================== */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 30px;
+}
+.card {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.card h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #777;
+    text-transform: uppercase;
+}
+.card .value {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #E50914; 
+    margin: 10px 0;
+    display: block;
+}
+.card .value-small {
+    font-size: 1.1rem;
+    color: #333;
+    margin: 10px 0;
+    display: block;
+    min-height: 40px; /* Jaga tinggi */
+}
+/* Tombol Edit di Card */
+.card-editable {
+    position: relative;
+    padding-bottom: 60px; /* Ruang untuk tombol */
+}
+.btn-edit-card {
+    position: absolute;
+    bottom: 20px;
+    left: 25px;
+    background-color: #ecf0f1;
+    color: #34495e;
+    border: 1px solid #bdc3c7;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.btn-edit-card:hover { background-color: #bdc3c7; }
+
+/* =======================
+   TABEL PESANAN
+======================== */
+.table-container {
+    background-color: #fff;
+    margin: 0 30px 30px;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    overflow-x: auto; 
+}
+.table-container h3 { margin-top: 0; font-size: 1.3rem; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; vertical-align: middle; }
+th { background-color: #f9f9f9; font-size: 0.9rem; text-transform: uppercase; color: #555; }
+td { font-size: 0.95rem; }
+
+/* Status Toggle */
+select.status-select {
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+select.status-Pending { background-color: #fef0e7; color: #f7902d; }
+select.status-Active { background-color: #e6f7f0; color: #00875a; }
+select.status-Completed { background-color: #eee; color: #777; }
+span.status-Pending,
+span.status-Active {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+span.status-Pending { background-color: #fef0e7; color: #f7902d; }
+span.status-Active { background-color: #e6f7f0; color: #00875a; }
+/* ... (kode CSS Anda sebelumnya) ... */
+
+/* Tombol Hapus di Tabel */
+.btn-delete-order {
+    background-color: #e74c3c; /* Merah */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.btn-delete-order:hover {
+    background-color: #c0392b; /* Merah lebih gelap */
+}
+/* =======================
+   HALAMAN CABANG
+======================== */
+.selector-container {
+    background-color: #fff;
+    padding: 25px;
+    margin: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.selector-container label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-right: 15px;
+    color: #333;
+}
+#cabang-select {
+    font-size: 1.1rem;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-width: 300px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 kolom */
+    gap: 20px;
+    padding: 0 30px 30px;
+}
+
+.info-box {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.info-box h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #777;
+    text-transform: uppercase;
+}
+.info-box .info-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+    display: block;
+    min-height: 25px; /* Jaga tinggi */
+}
+
+/* =======================
+   HALAMAN PENGGUNA
+======================== */
+.info-box .info-value ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    font-size: 0.95rem; /* Sedikit lebih kecil agar muat */
+}
+.info-box .info-value li {
+    padding: 4px 0;
+    border-bottom: 1px dashed #eee;
+}
+.info-box .info-value li:last-child {
+    border-bottom: none;
+}
+
+/* =======================
+   RESPONSIVE
+======================== */
+@media screen and (max-width: 768px) {
+    .admin-wrapper { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; }
+    .sidebar-logo { display: none; }
+    .sidebar-menu { flex-direction: row; margin: 0; }
+    .sidebar-menu li a { padding: 15px; }
+    .sidebar-menu li a i { margin-right: 5px; }
+    .sidebar-menu li a { font-size: 0.9rem; }
+    .header { padding: 15px; }
+    .header h2 { font-size: 1.2rem; }
+    .card-container, .table-container { padding: 15px; margin: 15px; }
+}

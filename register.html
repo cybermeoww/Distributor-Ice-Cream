@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun Cabang</title>
+    <link rel="stylesheet" href="regist_login-style.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <img src="asset/Logo.png" alt="Logo GLACIER" class="logo"> 
+            <h2>Daftar Cabang Baru</h2>
+            
+            <form> 
+                <div class="input-group">
+                    <input type="text" id="nama_lengkap" name="nama_lengkap" placeholder="Nama Lengkap Penanggung Jawab" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="nama_cabang" name="nama_cabang" placeholder="Nama Resmi Cabang (Contoh: AICE Cemara Asri)" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="alamat_cabang" name="alamat_cabang" placeholder="Alamat Lengkap Cabang" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="email" name="email" placeholder="Email Cabang" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder="Buat Kata Sandi" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Daftar Akun</button>
+                
+                <div class="signup-link" style="margin-top: 20px;">
+                    <p>Sudah punya akun? <a href="login.html">Masuk sekarang.</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="register.js"></script>
+</body>
+</html>
