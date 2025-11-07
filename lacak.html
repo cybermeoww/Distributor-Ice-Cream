@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulai Pelacakan</title>
+    <link rel="stylesheet" href="login-style.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .login-box { max-width: 450px; }
+        #status-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: none; /* Sembunyi dulu */
+        }
+        #status-area h3 { margin: 0; color: #4CAF50; }
+        #status-area p { margin: 5px 0 0; color: #ccc; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <img src="asset/Logo.png" alt="Logo" class="logo"> 
+            <h2>Pelacakan Sopir</h2>
+            <form id="lacak-form"> 
+                <div class="input-group">
+                    <input type="text" id="kode-lacak" placeholder="Masukkan Kode Lacak" required>
+                </div>
+                <button type="submit" class="btn-primary">Mulai Melacak</button>
+            </form>
+            
+            <div id="status-area">
+                <h3><strong id="status-title">MELACAK...</strong></h3>
+                <p id="status-info">Lokasi Anda sedang dikirim ke admin. Jangan tutup halaman ini.</p>
+                <p id="status-coords" style="font-size: 0.8rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script src="lacak.js"></script>
+</body>
+</html>
