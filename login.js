@@ -36,13 +36,13 @@ loginForm.addEventListener('submit', (e) => {
                 }).then(() => {
                     window.location.href = 'admin-dashboard.html';
                 });
-            } if (user.email === 'supir123@gmail.com') {
+            }else if (user.email === 'admin123@gmail.com') {
                 Swal.fire({
-                    title: 'Login Berhasil!', text: 'Mengarahkan ke Pelacakan...',
+                    title: 'Login Admin Berhasil!', text: 'Mengarahkan ke dashboard...',
                     icon: 'success', timer: 2000, 
                     showConfirmButton: false, allowOutsideClick: false 
                 }).then(() => {
-                    window.location.href = 'lacak.html';
+                    window.location.href = 'admin-dashboard.html';
                 });
             }else {
                 // INI LOGIKA BARU UNTUK CABANG
