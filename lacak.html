@@ -3,45 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mulai Pelacakan</title>
-    <link rel="stylesheet" href="regist_login-style.css"> 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Pelacakan GPS Aktif</title>
+    <link rel="stylesheet" href="regist_login-style.css"> <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .login-box { max-width: 450px; }
-        #status-area {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            display: none; /* Sembunyi dulu */
+        /* CSS tambahan untuk tampilan lacak.html */
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
-        #status-area h3 { margin: 0; color: #4CAF50; }
-        #status-area p { margin: 5px 0 0; color: #ccc; }
+        .lacak-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .lacak-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #status-area {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        #status-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #0056b3;
+            margin-bottom: 5px;
+        }
+        #status-info {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #status-coords {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .btn-logout {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #f44336;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <img src="asset/Logo.png" alt="Logo" class="logo"> 
-            <h2>Pelacakan Sopir</h2>
-            <form id="lacak-form"> 
-                <div class="input-group">
-                    <input type="text" id="kode-lacak" placeholder="Masukkan Kode Lacak" required>
-                </div>
-                <button type="submit" class="btn-primary">Mulai Melacak</button>
-            </form>
-            
-            <div id="status-area">
-                <h3><strong id="status-title">MELACAK...</strong></h3>
-                <p id="status-info">Lokasi Anda sedang dikirim ke admin. Jangan tutup halaman ini.</p>
-                <p id="status-coords" style="font-size: 0.8rem;"></p>
-            </div>
+    <div class="lacak-container">
+        <img src="asset/Logo.png" alt="Logo SWEETDROPS" class="logo" style="width: 100px; margin-bottom: 20px;"> 
+        <h2>Pelacakan Pengiriman</h2>
+        
+        <div id="status-area">
+            <div id="status-title">Memuat...</div>
+            <div id="status-info">Menunggu identifikasi akun sopir...</div>
+            <div id="status-coords"></div>
         </div>
+
+        <button id="sopir-logout-button" class="btn-logout">Selesai / Logout</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
     <script src="lacak.js"></script>
 </body>
 </html>

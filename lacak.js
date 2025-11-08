@@ -8,82 +8,140 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
-// ----------------------------------------------
+
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore(); 
+const db = firebase.firestore();
+const auth = firebase.auth(); 
 
-const loginForm = document.querySelector('form');
+// Elemen DOM
+const statusArea = document.getElementById('status-area');
+const statusTitle = document.getElementById('status-title');
+const statusInfo = document.getElementById('status-info');
+const statusCoords = document.getElementById('status-coords');
+const logoutButton = document.getElementById('sopir-logout-button');
 
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault(); 
-    const email = loginForm['email'].value;
-    const password = loginForm['password'].value;
+let docRef = null; // Untuk menyimpan referensi dokumen pengiriman yang sedang dilacak
+let watchId = null; // Untuk menyimpan ID pelacakan GPS
 
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
+// --- LOGIKA UTAMA: Cek Status Login Sopir ---
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Pengguna sudah login, cari tugas untuk ID sopir ini
+        findMyDelivery(user.uid);
+    } else {
+        // Pengguna tidak login, arahkan ke halaman login
+        window.location.href = 'login.html';
+    }
+});
 
-            // --- LOGIKA BARU BERBASIS PERAN (ROLE) ---
-            
-            // 1. Cek apakah Admin?
-            if (user.email === 'admin123@gmail.com') {
-                Swal.fire({
-                    title: 'Login Admin Berhasil!', text: 'Mengarahkan ke dashboard...',
-                    icon: 'success', timer: 2000, 
-                    showConfirmButton: false, allowOutsideClick: false 
-                }).then(() => {
-                    window.location.href = 'admin-dashboard.html';
-                });
-                return; // Hentikan proses
+// 1. Cari pengiriman yang ditugaskan ke Sopir yang sedang login
+function findMyDelivery(sopirId) {
+    statusArea.style.display = 'block';
+    statusTitle.textContent = "MENCARI TUGAS...";
+    statusInfo.textContent = "Mencari pengiriman aktif untuk Anda...";
+    
+    db.collection("pengiriman")
+        .where("sopirId", "==", sopirId) // <-- KUNCI: Mencari berdasarkan ID Sopir
+        .where("status", "==", "Pending") // Cari yang statusnya "Menunggu Dikirim"
+        .limit(1) // Ambil 1 saja (Satu sopir hanya punya satu tugas pending)
+        .get()
+        .then((querySnapshot) => {
+            if (querySnapshot.empty) {
+                statusTitle.textContent = "TUGAS SELESAI";
+                statusInfo.textContent = "Tidak ada pengiriman aktif yang ditugaskan untuk Anda saat ini.";
+            } else {
+                // Tugas ditemukan!
+                const doc = querySnapshot.docs[0];
+                docRef = doc.ref; // Simpan referensi dokumen pengiriman
+                
+                statusTitle.textContent = "MELACAK AKTIF";
+                statusInfo.textContent = `Mengirim lokasi untuk rute: ${doc.data().rute}`;
+                
+                // Mulai pelacakan GPS dan update status di DB
+                startWatching();
             }
-
-            // 2. Jika bukan Admin, cek di database 'users'
-            db.collection("users").doc(user.uid).get().then((doc) => {
-                if (doc.exists) {
-                    const userData = doc.data();
-                    
-                    if (userData.role === "sopir") {
-                        // --- 2a. JIKA SOPIR ---
-                        Swal.fire({
-                            title: 'Login Sopir Berhasil!',
-                            text: `Selamat datang, ${userData.nama_lengkap}. Mengarahkan ke halaman pelacakan...`,
-                            icon: 'success', timer: 2000,
-                            showConfirmButton: false, allowOutsideClick: false
-                        }).then(() => {
-                            window.location.href = 'lacak.html'; // <-- LANGSUNG KE LACAK.HTML
-                        });
-
-                    } else if (userData.role === "konsumen") {
-                        // --- 2b. JIKA CABANG (KONSUMEN) ---
-                        localStorage.setItem('namaCabang', userData.namaCabang);
-                        Swal.fire({
-                            title: 'Login Berhasil!',
-                            text: `Selamat datang, ${userData.namaCabang}!`,
-                            icon: 'success', timer: 2000,
-                            showConfirmButton: false, allowOutsideClick: false
-                        }).then(() => {
-                            window.location.href = 'index.html'; 
-                        });
-                    } else {
-                        // Jika role tidak dikenal
-                        auth.signOut();
-                        Swal.fire('Login Gagal', 'Peran (role) akun Anda tidak dikenal.', 'error');
-                    }
-                    
-                } else {
-                    auth.signOut();
-                    Swal.fire('Login Gagal', 'Data pengguna Anda tidak ditemukan di database.', 'error');
-                }
-            });
         })
-        .catch((error) => {
-            Swal.fire({
-                title: 'Login Gagal',
-                text: 'Email atau password yang Anda masukkan salah.',
-                icon: 'error',
-                confirmButtonText: 'Coba Lagi'
-            });
+        .catch(err => {
+            statusTitle.textContent = "Error DB";
+            statusInfo.textContent = "Gagal mencari tugas dari database. Cek koneksi Anda.";
         });
+}
+
+
+// 2. Fungsi untuk memulai pelacakan GPS (Geolocation API)
+function startWatching() {
+    if (!navigator.geolocation) {
+        statusTitle.textContent = "Error";
+        statusInfo.textContent = "Browser Anda tidak mendukung pelacakan lokasi.";
+        return;
+    }
+
+    if (location.protocol !== 'https:') {
+        statusTitle.textContent = "Error";
+        statusInfo.textContent = "Pelacakan GPS hanya berfungsi di halaman HTTPS (aman). Deployment wajib di Netlify/Vercel/GitHub Pages.";
+        return;
+    }
+    
+    // Matikan pelacakan lama jika ada
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            // Berhasil dapat lokasi
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // Kirim lokasi ke Firestore (hanya jika ada tugas aktif)
+            if (docRef) {
+                docRef.update({
+                    latitude: lat,
+                    longitude: lng,
+                    status: "Active", // Otomatis ubah status saat GPS mulai
+                    lastUpdate: new Date()
+                })
+                .then(() => {
+                    statusCoords.textContent = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+                })
+                .catch(err => statusCoords.textContent = "Gagal update lokasi ke database.");
+            }
+        },
+        (error) => {
+            // Gagal dapat lokasi
+            statusTitle.textContent = "Error GPS";
+            statusInfo.textContent = "Gagal mendapatkan lokasi Anda. Pastikan GPS dan izin lokasi aktif.";
+            statusCoords.textContent = `Error Code: ${error.code}`;
+        },
+        {
+            enableHighAccuracy: true, 
+            timeout: 10000,           
+            maximumAge: 0             
+        }
+    );
+}
+
+// 3. Fungsi Logout
+logoutButton.addEventListener('click', () => {
+    Swal.fire({
+        title: 'Konfirmasi Keluar',
+        text: "Anda yakin ingin logout? Pelacakan akan dihentikan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Logout'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Hentikan pelacakan GPS
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            // Logout dari Firebase Auth
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+    });
 });
