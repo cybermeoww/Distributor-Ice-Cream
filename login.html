@@ -3,40 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk ke GLACIER</title>
-    <link rel="stylesheet" href="regist_login-style.css"> 
+    <title>Masuk ke SWEETDROPS</title>
+    <link rel="stylesheet" href="regist_login-style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="login-container">
         <div class="login-box">
-            <img src="asset/Logo.png" alt="Logo SWEETDROPS" class="logo"> <h2>Masuk</h2>
-            <form action="/login" method="POST"> <div class="input-group">
-                    <input type="text" id="email" name="email" placeholder="Email atau nomor telepon" required>
+            <img src="asset/Logo.png" alt="Logo SWEETDROPS" class="logo">
+            <h2>Masuk ke Akun Anda</h2>
+            
+            <form>
+                <div class="input-group">
+                    <input type="email" id="email" name="email" placeholder="Email (Admin / Cabang / Sopir)" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="password" name="password" placeholder="Kata sandi" required>
+                    <input type="password" id="password" name="password" placeholder="Kata Sandi" required>
                 </div>
+                
                 <button type="submit" class="btn-primary">Masuk</button>
-                <div class="options">
-                    <!-- <label>
-                        <input type="checkbox" name="remember_me"> Ingat saya
-                    </label> -->
-                    <!-- <a href="#">Butuh bantuan?</a> -->
+                
+                <div class="signup-link-wrapper">
+                    <p>Belum punya akun?</p>
+                    <div class="signup-links">
+                        <a href="register.html">Daftar sebagai Cabang</a>
+                        <span>|</span>
+                        <a href="register-sopir.html">Daftar sebagai Sopir</a>
+                    </div>
                 </div>
             </form>
-            <div class="signup-link">
-                <p>Belum punya akun? <a href="register.html">Daftar sekarang.</a></p>
-            </div>
-            <!-- <div class="admin-login-info">
-                <p>Untuk Admin: Gunakan email 'admin@sweetdrops.com' dan password 'admin123'</p>
-            </div> -->
         </div>
     </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
     <script src="login.js"></script>
 </body>
 </html>

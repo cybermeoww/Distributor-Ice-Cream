@@ -89,20 +89,53 @@ h2 {
     margin-right: 5px;
 }
 
+/* GANTI KODE .signup-link YANG LAMA DENGAN INI */
+
 .signup-link {
-    margin-top: 30px;
-    font-size: 1em;
-    color: #aaa;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.signup-link p {
+    margin: 0;
 }
 
 .signup-link a {
-    color: #fff; /* Atau warna lain yang kontras */
-    text-decoration: none;
+    color: #fff;
     font-weight: bold;
+    text-decoration: none;
 }
-
 .signup-link a:hover {
     text-decoration: underline;
+}
+
+/* TAMBAHKAN STYLE BARU INI */
+.signup-link-wrapper {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+.signup-link-wrapper p {
+    margin: 0 0 10px 0;
+}
+.signup-links {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.signup-links a {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+}
+.signup-links a:hover {
+    text-decoration: underline;
+}
+.signup-links span {
+    color: #555;
 }
 
 .admin-login-info {
