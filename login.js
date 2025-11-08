@@ -9,13 +9,11 @@ const firebaseConfig = {
   measurementId: "G-3YJY51SZ90"
 };
 // ----------------------------------------------
-
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore(); // Butuh firestore
+const db = firebase.firestore(); 
 
-// Menangkap elemen form login
 const loginForm = document.querySelector('form');
 
 loginForm.addEventListener('submit', (e) => {
@@ -27,7 +25,9 @@ loginForm.addEventListener('submit', (e) => {
         .then((userCredential) => {
             const user = userCredential.user;
 
-            // Cek apakah ini admin
+            // --- LOGIKA BARU BERBASIS PERAN (ROLE) ---
+            
+            // 1. Cek apakah Admin?
             if (user.email === 'admin123@gmail.com') {
                 Swal.fire({
                     title: 'Login Admin Berhasil!', text: 'Mengarahkan ke dashboard...',
@@ -36,15 +36,28 @@ loginForm.addEventListener('submit', (e) => {
                 }).then(() => {
                     window.location.href = 'admin-dashboard.html';
                 });
-            }else {
-                // INI LOGIKA BARU UNTUK CABANG
-                // Ambil data cabang dari 'users'
-                db.collection("users").doc(user.uid).get().then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        // Simpan info penting ke localStorage
+                return; // Hentikan proses
+            }
+
+            // 2. Jika bukan Admin, cek di database 'users'
+            db.collection("users").doc(user.uid).get().then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    
+                    if (userData.role === "sopir") {
+                        // --- 2a. JIKA SOPIR ---
+                        Swal.fire({
+                            title: 'Login Sopir Berhasil!',
+                            text: `Selamat datang, ${userData.nama_lengkap}. Mengarahkan ke halaman pelacakan...`,
+                            icon: 'success', timer: 2000,
+                            showConfirmButton: false, allowOutsideClick: false
+                        }).then(() => {
+                            window.location.href = 'lacak.html'; // <-- LANGSUNG KE LACAK.HTML
+                        });
+
+                    } else if (userData.role === "konsumen") {
+                        // --- 2b. JIKA CABANG (KONSUMEN) ---
                         localStorage.setItem('namaCabang', userData.namaCabang);
-                        
                         Swal.fire({
                             title: 'Login Berhasil!',
                             text: `Selamat datang, ${userData.namaCabang}!`,
@@ -54,12 +67,16 @@ loginForm.addEventListener('submit', (e) => {
                             window.location.href = 'index.html'; 
                         });
                     } else {
-                        // Jika data tidak ditemukan (seharusnya tidak mungkin)
+                        // Jika role tidak dikenal
                         auth.signOut();
-                        Swal.fire('Login Gagal', 'Data cabang Anda tidak ditemukan.', 'error');
+                        Swal.fire('Login Gagal', 'Peran (role) akun Anda tidak dikenal.', 'error');
                     }
-                });
-            }
+                    
+                } else {
+                    auth.signOut();
+                    Swal.fire('Login Gagal', 'Data pengguna Anda tidak ditemukan di database.', 'error');
+                }
+            });
         })
         .catch((error) => {
             Swal.fire({

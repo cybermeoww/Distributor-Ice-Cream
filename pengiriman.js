@@ -7,7 +7,6 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
-
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -16,6 +15,7 @@ const db = firebase.firestore();
 // Referensi
 const ordersRef = db.collection("orders");
 const pengirimanRef = db.collection("pengiriman"); 
+const usersRef = db.collection("users"); // <-- BUTUH AKSES KE USERS
 
 // Elemen DOM
 const logoutButton = document.getElementById('admin-logout-button');
@@ -23,8 +23,6 @@ const deliveryTableBody = document.getElementById('delivery-table-body');
 const productSelect = document.getElementById('product-view-select');
 const pageTitle = document.getElementById('page-title');
 const tableTitle = document.getElementById('table-title');
-
-// DOM Modal Peta
 const mapModal = document.getElementById('map-modal');
 const closeMapModal = document.getElementById('close-map-modal');
 const mapIframe = document.getElementById('map-iframe');
@@ -37,7 +35,8 @@ let productView = localStorage.getItem('currentProductView') || 'jagung';
 const productId = (productView === 'jagung') ? 'jagung-001' : 'durian-002';
 const docRef = db.collection("dashboard_data").doc(productView);
 let currentKodeProduk = "Memuat...";
-let liveListener = null; // Untuk menyimpan listener live location
+let liveListener = null; 
+let sopirList = []; // <-- UNTUK MENYIMPAN DAFTAR SOPIR
 
 // --- Keamanan Admin ---
 auth.onAuthStateChanged((user) => {
@@ -64,6 +63,18 @@ docRef.onSnapshot((doc) => {
         console.log(`Dokumen '${productView}' tidak ditemukan!`);
     }
 });
+
+// --- FUNGSI BARU: AMBIL DAFTAR SOPIR ---
+async function fetchSopirList() {
+    sopirList = []; // Kosongkan dulu
+    const querySnapshot = await usersRef.where("role", "==", "sopir").get();
+    querySnapshot.forEach(doc => {
+        sopirList.push({
+            id: doc.id,
+            nama: doc.data().nama_lengkap
+        });
+    });
+}
 
 // --- FUNGSI UTAMA: BACA DATA (FIXED: Filter manual) ---
 function displayDeliveries() {
@@ -98,11 +109,10 @@ function displayDeliveries() {
                         let aksiButton = `<button class="btn-info btn-input-delivery" data-order-id="${orderId}">Input Pengiriman</button>`;
 
                         if (deliveryData) {
-                            sopir = deliveryData.sopir;
+                            sopir = deliveryData.sopirName; // <-- Ambil nama
                             kendaraan = deliveryData.kendaraan;
                             rute = deliveryData.rute;
                             
-                            // Tambah tombol Lacak + Dropdown Status
                             aksiButton = `
                                 <button class="btn-info btn-lacak" data-id="${orderId}">Lacak</button>
                                 <select class="status-select-delivery status-${deliveryData.status}" data-id="${orderId}">
@@ -135,91 +145,86 @@ function displayDeliveries() {
         });
 }
 
-// --- FUNGSI POP-UP INPUT PENGIRIMAN ---
+// --- FUNGSI POP-UP INPUT PENGIRIMAN (LOGIKA BARU) ---
 deliveryTableBody.addEventListener('click', async (e) => {
     if (e.target.classList.contains('btn-input-delivery')) {
         const orderId = e.target.getAttribute('data-order-id');
 
+        // Buat HTML untuk dropdown sopir
+        let sopirOptions = '';
+        if (sopirList.length === 0) {
+            sopirOptions = '<option value="">Error: Belum ada sopir terdaftar</option>';
+        } else {
+            sopirList.forEach(sopir => {
+                sopirOptions += `<option value="${sopir.id}">${sopir.nama}</option>`;
+            });
+        }
+        
         const { value: formValues } = await Swal.fire({
             title: 'Input Detail Pengiriman',
             html:
-                '<input id="swal-sopir" class="swal2-input" placeholder="Nama Sopir" required>' +
+                '<label for="swal-sopir" style="display: block; text-align: left; margin: 10px 0 5px;">Pilih Sopir</label>' +
+                `<select id="swal-sopir" class="swal2-input">${sopirOptions}</select>` +
                 '<input id="swal-kendaraan" class="swal2-input" placeholder="Kendaraan (Contoh: BK 1234 MA)" required>' +
                 '<input id="swal-rute" class="swal2-input" placeholder="Rute (Contoh: Gudang - Cemara Asri)" required>',
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Simpan',
             preConfirm: () => {
-                const sopir = document.getElementById('swal-sopir').value;
+                const sopirSelect = document.getElementById('swal-sopir');
+                const sopirId = sopirSelect.value;
+                const sopirName = sopirSelect.options[sopirSelect.selectedIndex].text;
                 const kendaraan = document.getElementById('swal-kendaraan').value;
                 const rute = document.getElementById('swal-rute').value;
-                if (!sopir || !kendaraan || !rute) {
+                
+                if (!sopirId || !kendaraan || !rute) {
                     Swal.showValidationMessage('Semua kolom wajib diisi');
                     return false;
                 }
-                return { sopir, kendaraan, rute };
+                return { sopirId, sopirName, kendaraan, rute };
             }
         });
 
         if (formValues) {
-            // Buat Kode Lacak unik (6 digit acak)
-            const kodeLacak = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
             pengirimanRef.doc(orderId).set({
-                sopir: formValues.sopir,
+                sopirId: formValues.sopirId, // <-- Simpan ID Sopir
+                sopirName: formValues.sopirName, // <-- Simpan Nama Sopir
                 kendaraan: formValues.kendaraan,
                 rute: formValues.rute,
                 status: "Pending", 
                 orderId: orderId,
                 tanggal: new Date(),
-                kodeLacak: kodeLacak, // <-- SIMPAN KODE LACAK
                 latitude: null,
                 longitude: null
             })
             .then(() => {
-                Swal.fire('Sukses!', `Pengiriman diinput. Kode Lacak: ${kodeLacak}`, 'success');
+                Swal.fire('Sukses!', 'Pengiriman telah ditugaskan ke sopir.', 'success');
             })
             .catch(e => Swal.fire('Error', e.message, 'error'));
         }
     }
     
-    // FUNGSI BARU: TOMBOL LACAK DIKLIK
+    // FUNGSI TOMBOL LACAK DIKLIK
     if (e.target.classList.contains('btn-lacak')) {
         const orderId = e.target.getAttribute('data-id');
         const docToListen = pengirimanRef.doc(orderId);
         
-        // Hentikan listener lama (jika ada)
         if (liveListener) liveListener(); 
         
-        // Mulai listener baru
         liveListener = docToListen.onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
                 
-                // Set info modal
-                mapSopirName.textContent = data.sopir;
-                mapKodeLacak.textContent = data.kodeLacak;
+                mapSopirName.textContent = data.sopirName;
+                mapKodeLacak.textContent = "Pelacakan Aktif"; // Kode lacak tidak diperlukan lagi
                 
                 if (data.latitude && data.longitude) {
-                    // Ada lokasi! Tampilkan di peta
-                    const lat = data.latitude;
-                    const lng = data.longitude;
-                    mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${lat},${lng}&zoom=15`;
-                    // Ganti YOUR_API_KEY dengan API Key Google Maps Embed Anda
-                    // (Bisa juga pakai q=${data.rute} jika tidak punya API Key)
-                    // Mari kita pakai yang gratis (berbasis rute, bukan live GPS)
-                    mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${data.latitude},${data.longitude}`;
-                    
-                    // SOLUSI GRATIS (Tanpa Live Marker, tapi tetap update)
                     mapIframe.src = `https://maps.google.com/maps?q=${data.latitude},${data.longitude}&z=15&output=embed`;
-
                     mapLastUpdate.textContent = `Lokasi diperbarui: ${new Date(data.lastUpdate.seconds * 1000).toLocaleTimeString()}`;
                 } else {
-                    // Belum ada lokasi, tampilkan rute
                     mapIframe.src = `https://maps.google.com/maps?q=${data.rute}&z=12&output=embed`;
                     mapLastUpdate.textContent = "Menunggu sopir memulai pelacakan...";
                 }
-                
                 mapModal.style.display = 'block';
             }
         });
@@ -234,7 +239,6 @@ deliveryTableBody.addEventListener('change', (e) => {
 // --- EVENT LISTENER MODAL & DROPDOWN ---
 closeMapModal.addEventListener('click', () => {
     mapModal.style.display = 'none';
-    // Hentikan listener saat modal ditutup
     if (liveListener) liveListener(); 
 });
 productSelect.addEventListener('change', (e) => {
@@ -243,7 +247,11 @@ productSelect.addEventListener('change', (e) => {
 });
 
 // --- INITIAL LOAD & LOGOUT ---
-document.addEventListener('DOMContentLoaded', displayDeliveries);
+document.addEventListener('DOMContentLoaded', () => {
+    fetchSopirList(); // Ambil daftar sopir dulu
+    displayDeliveries(); // Baru tampilkan tabel
+});
+
 logoutButton.addEventListener('click', (e) => {
     e.preventDefault();
     auth.signOut().then(() => {
