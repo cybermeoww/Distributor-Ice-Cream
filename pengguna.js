@@ -28,6 +28,10 @@ const rolesTableBody = document.getElementById('roles-table-body');
 
 // Elemen Tabel
 const adminValue = document.getElementById('admin-value');
+const adminValue2 = document.getElementById('admin-value2');
+const adminValue3 = document.getElementById('admin-value3');
+const adminValue4 = document.getElementById('admin-value4');
+const adminValue5 = document.getElementById('admin-value5');
 const gudangValue = document.getElementById('gudang-value');
 const kurirValue = document.getElementById('kurir-value');
 const cabangValue = document.getElementById('cabang-value');
@@ -53,10 +57,18 @@ docRef.onSnapshot((doc) => {
     if (doc.exists) {
         const data = doc.data();
         adminValue.textContent = data.adminName || "N/A";
+        adminValue2.textContent = data.adminName2 || "N/A";
+        adminValue3.textContent = data.adminName3 || "N/A";
+        adminValue4.textContent = data.adminName4 || "N/A";
+        adminValue5.textContent = data.adminName5 || "N/A";
         gudangValue.textContent = data.gudangName || "N/A";
         kurirValue.textContent = data.kurirName || "N/A";
     } else {
         adminValue.textContent = "Data belum diatur";
+        adminValue2.textContent = "Data belum diatur";
+        adminValue3.textContent = "Data belum diatur";
+        adminValue4.textContent = "Data belum diatur";
+        adminValue5.textContent = "Data belum diatur";
         gudangValue.textContent = "Data belum diatur";
         kurirValue.textContent = "Data belum diatur";
     }
@@ -127,6 +139,22 @@ rolesTableBody.addEventListener('click', async (e) => {
         title = 'Ubah Admin';
         currentValue = adminValue.textContent;
         fieldName = 'adminName';
+    }else if (role === 'admin') {
+        title = 'Ubah Admin';
+        currentValue = adminValue2.textContent;
+        fieldName = 'adminName';
+    }else if (role === 'admin') {
+        title = 'Ubah Admin';
+        currentValue = adminValue3.textContent;
+        fieldName = 'adminName';
+    }else if (role === 'admin') {
+        title = 'Ubah Admin';
+        currentValue = adminValue4.textContent;
+        fieldName = 'adminName';
+    }else if (role === 'admin') {
+        title = 'Ubah Admin';
+        currentValue = adminValue5.textContent;
+        fieldName = 'adminName';
     } else if (role === 'gudang') {
         title = 'Ubah Petugas Gudang';
         currentValue = gudangValue.textContent;
@@ -160,3 +188,95 @@ logoutButton.addEventListener('click', (e) => {
         window.location.href = 'login.html';
     });
 });
+
+// --- BLOK KODE PROTEKSI MENU (TAMBAHKAN INI DI AKHIR SETIAP FILE JS ADMIN) ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Daftar Password (Bisa Anda ubah di sini)
+    const passwords = {
+        pesanan: "PESAN123",
+        produk: "PROD123",
+        stok: "STOK123",
+        cabang: "CAB123",
+        pengiriman: "KIRIM123"
+    };
+
+    // 2. Fungsi Pop-up
+    async function showPasswordPopup(menuName, correctPassword, targetUrl) {
+        // Cek apakah kita sudah di halaman tujuan
+        if (window.location.pathname.endsWith(targetUrl)) {
+            return; // Jika sudah, jangan tanya password
+        }
+
+        const { value: password } = await Swal.fire({
+            title: `Akses Terbatas`,
+            text: `Masukkan password untuk membuka ${menuName}:`,
+            input: 'password',
+            inputPlaceholder: 'Masukkan password...',
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Buka',
+            cancelButtonText: 'Batal',
+            showLoaderOnConfirm: true,
+            preConfirm: (pass) => {
+                if (pass === correctPassword) {
+                    return true;
+                } else {
+                    Swal.showValidationMessage(`Password salah!`);
+                    return false;
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        });
+
+        if (password) {
+            // Jika password benar, arahkan ke halaman
+            window.location.href = targetUrl;
+        }
+    }
+
+    // 3. Pasang Listener ke Semua Tombol Menu yang Dilindungi
+    const menuPesanan = document.getElementById('menu-pesanan');
+    if (menuPesanan) {
+        menuPesanan.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Pesanan', passwords.pesanan, 'pesanan.html');
+        });
+    }
+
+    const menuProduk = document.getElementById('menu-produk');
+    if (menuProduk) {
+        menuProduk.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Produk', passwords.produk, 'produk.html');
+        });
+    }
+
+    const menuStok = document.getElementById('menu-stok');
+    if (menuStok) {
+        menuStok.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Stok', passwords.stok, 'stok.html');
+        });
+    }
+    
+    const menuCabang = document.getElementById('menu-cabang');
+    if (menuCabang) {
+        menuCabang.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Cabang', passwords.cabang, 'cabang.html');
+        });
+    }
+    
+    const menuPengiriman = document.getElementById('menu-pengiriman');
+    if (menuPengiriman) {
+        menuPengiriman.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Pengiriman', passwords.pengiriman, 'pengiriman.html');
+        });
+    }
+});
+// --- AKHIR BLOK KODE PROTEKSI ---

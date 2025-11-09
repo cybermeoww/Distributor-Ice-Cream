@@ -147,3 +147,95 @@ logoutButton.addEventListener('click', (e) => {
         window.location.href = 'login.html';
     });
 });
+
+// --- BLOK KODE PROTEKSI MENU (TAMBAHKAN INI DI AKHIR SETIAP FILE JS ADMIN) ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Daftar Password (Bisa Anda ubah di sini)
+    const passwords = {
+        pesanan: "PESAN123",
+        produk: "PROD123",
+        stok: "STOK123",
+        cabang: "CAB123",
+        pengiriman: "KIRIM123"
+    };
+
+    // 2. Fungsi Pop-up
+    async function showPasswordPopup(menuName, correctPassword, targetUrl) {
+        // Cek apakah kita sudah di halaman tujuan
+        if (window.location.pathname.endsWith(targetUrl)) {
+            return; // Jika sudah, jangan tanya password
+        }
+
+        const { value: password } = await Swal.fire({
+            title: `Akses Terbatas`,
+            text: `Masukkan password untuk membuka ${menuName}:`,
+            input: 'password',
+            inputPlaceholder: 'Masukkan password...',
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Buka',
+            cancelButtonText: 'Batal',
+            showLoaderOnConfirm: true,
+            preConfirm: (pass) => {
+                if (pass === correctPassword) {
+                    return true;
+                } else {
+                    Swal.showValidationMessage(`Password salah!`);
+                    return false;
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        });
+
+        if (password) {
+            // Jika password benar, arahkan ke halaman
+            window.location.href = targetUrl;
+        }
+    }
+
+    // 3. Pasang Listener ke Semua Tombol Menu yang Dilindungi
+    const menuPesanan = document.getElementById('menu-pesanan');
+    if (menuPesanan) {
+        menuPesanan.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Pesanan', passwords.pesanan, 'pesanan.html');
+        });
+    }
+
+    const menuProduk = document.getElementById('menu-produk');
+    if (menuProduk) {
+        menuProduk.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Produk', passwords.produk, 'produk.html');
+        });
+    }
+
+    const menuStok = document.getElementById('menu-stok');
+    if (menuStok) {
+        menuStok.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Stok', passwords.stok, 'stok.html');
+        });
+    }
+    
+    const menuCabang = document.getElementById('menu-cabang');
+    if (menuCabang) {
+        menuCabang.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Cabang', passwords.cabang, 'cabang.html');
+        });
+    }
+    
+    const menuPengiriman = document.getElementById('menu-pengiriman');
+    if (menuPengiriman) {
+        menuPengiriman.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPasswordPopup('Manajemen Pengiriman', passwords.pengiriman, 'pengiriman.html');
+        });
+    }
+});
+// --- AKHIR BLOK KODE PROTEKSI ---
