@@ -29,9 +29,6 @@
         <main class="main-content">
             <header class="header">
                 <h2>Manajemen Pengguna (User Access)</h2>
-                <div class="header-user">
-                    <span>Selamat Datang, Admin</span>
-                </div>
             </header>
 
             <section class="selector-container">
@@ -43,7 +40,7 @@
 
             <section class="table-container">
                 <h3>Daftar Peran Pengguna</h3>
-                <table>
+                <table id="roles-table">
                     <thead>
                         <tr>
                             <th>Peran</th>
@@ -54,39 +51,41 @@
                     <tbody id="roles-table-body">
                         <tr>
                             <td><strong>Admin 1</strong></td>
-                            <td id="admin-value">Memuat...</td>
-                            <td><button class="btn-edit" data-role="admin">Ubah</button></td>
+                            <td id="admin-value-1">Memuat...</td>
+                            <td><button class="btn-edit" data-role="adminName">Ubah</button></td>
                         </tr>
                         <tr>
                             <td><strong>Admin 2</strong></td>
-                            <td id="admin-value2">Memuat...</td>
-                            <td><button class="btn-edit" data-role="admin">Ubah</button></td>
+                            <td id="admin-value-2">Memuat...</td>
+                            <td><button class="btn-edit" data-role="adminName2">Ubah</button></td>
                         </tr>
                         <tr>
                             <td><strong>Admin 3</strong></td>
-                            <td id="admin-value3">Memuat...</td>
-                            <td><button class="btn-edit" data-role="admin">Ubah</button></td>
+                            <td id="admin-value-3">Memuat...</td>
+                            <td><button class="btn-edit" data-role="adminName3">Ubah</button></td>
                         </tr>
                         <tr>
                             <td><strong>Admin 4</strong></td>
-                            <td id="admin-value4">Memuat...</td>
-                            <td><button class="btn-edit" data-role="admin">Ubah</button></td>
+                            <td id="admin-value-4">Memuat...</td>
+                            <td><button class="btn-edit" data-role="adminName4">Ubah</button></td>
                         </tr>
                         <tr>
                             <td><strong>Admin 5</strong></td>
-                            <td id="admin-value5">Memuat...</td>
-                            <td><button class="btn-edit" data-role="admin">Ubah</button></td>
+                            <td id="admin-value-5">Memuat...</td>
+                            <td><button class="btn-edit" data-role="adminName5">Ubah</button></td>
                         </tr>
+
                         <tr>
                             <td><strong>Petugas Gudang</strong></td>
                             <td id="gudang-value">Memuat...</td>
-                            <td><button class="btn-edit" data-role="gudang">Ubah</button></td>
+                            <td><button class="btn-edit" data-role="gudangName">Ubah</button></td>
                         </tr>
                         <tr>
                             <td><strong>Kurir</strong></td>
                             <td id="kurir-value">Memuat...</td>
-                            <td><button class="btn-edit" data-role="kurir">Ubah</button></td>
+                            <td><button class="btn-edit" data-role="kurirName">Ubah</button></td>
                         </tr>
+                        
                         <tr style="background-color: #f9f9f9;">
                             <td><strong>Cabang (Dipilih)</strong></td>
                             <td id="cabang-value">Pilih cabang di atas...</td>
@@ -95,6 +94,47 @@
                     </tbody>
                 </table>
             </section>
+            
+            <section class="table-container" id="password-manager" style="display:none;">
+                <h3><i class="fas fa-key"></i> Reset Password Menu (Super Admin)</h3>
+                <table id="password-table">
+                    <thead>
+                        <tr>
+                            <th>Menu</th>
+                            <th>Password Saat Ini</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Manajemen Pesanan</td>
+                            <td id="pass-pesanan-value">...</td>
+                            <td><button class="btn-edit" data-role="pesanan">Reset</button></td>
+                        </tr>
+                        <tr>
+                            <td>Manajemen Produk</td>
+                            <td id="pass-produk-value">...</td>
+                            <td><button class="btn-edit" data-role="produk">Reset</button></td>
+                        </tr>
+                        <tr>
+                            <td>Manajemen Stok</td>
+                            <td id="pass-stok-value">...</td>
+                            <td><button class="btn-edit" data-role="stok">Reset</button></td>
+                        </tr>
+                        <tr>
+                            <td>Manajemen Cabang</td>
+                            <td id="pass-cabang-value">...</td>
+                            <td><button class="btn-edit" data-role="cabang">Reset</button></td>
+                        </tr>
+                        <tr>
+                            <td>Distribusi & Pengiriman</td>
+                            <td id="pass-pengiriman-value">...</td>
+                            <td><button class="btn-edit" data-role="pengiriman">Reset</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
         </main>
     </div>
 

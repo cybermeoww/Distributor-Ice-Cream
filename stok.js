@@ -41,7 +41,7 @@ let currentStokKeluar = 0;
 // --- Keamanan Admin ---
 auth.onAuthStateChanged((user) => {
     if (user) {
-        if (user.email !== 'admin123@gmail.com') {
+        if (user.email !== 'admin123@gmail.com' && user.email !== 'superadmin@gmail.com') {
             alert("Akses ditolak."); window.location.href = 'index.html'; 
         }
     } else {
@@ -131,95 +131,106 @@ logoutButton.addEventListener('click', (e) => {
         window.location.href = 'login.html';
     });
 });
-
-// --- BLOK KODE PROTEKSI MENU (TAMBAHKAN INI DI AKHIR SETIAP FILE JS ADMIN) ---
+// --- BLOK KODE PROTEKSI MENU (BARU - BACA DARI DB) ---
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Daftar Password (Bisa Anda ubah di sini)
-    const passwords = {
-        pesanan: "PESAN123",
-        produk: "PROD123",
-        stok: "STOK123",
-        cabang: "CAB123",
-        pengiriman: "KIRIM123"
-    };
+    // Tunggu firebase auth siap
+    firebase.auth().onAuthStateChanged(user => {
+        if (!user) return; // Jika tidak ada user, hentikan
+        
+        const currentUserEmail = user.email;
 
-    // 2. Fungsi Pop-up
-    async function showPasswordPopup(menuName, correctPassword, targetUrl) {
-        // Cek apakah kita sudah di halaman tujuan
-        if (window.location.pathname.endsWith(targetUrl)) {
-            return; // Jika sudah, jangan tanya password
-        }
+        // 1. Fungsi Pop-up (Async dan Baca DB)
+        async function showPasswordPopup(menuTitle, menuFieldName, targetUrl) {
+            // Cek apakah sudah di halaman tujuan
+            if (window.location.pathname.endsWith(targetUrl)) {
+                return; 
+            }
+            
+            // --- LOGIKA BYPASS SUPER ADMIN ---
+            if (currentUserEmail === 'superadmin@gmail.com') {
+                window.location.href = targetUrl; // Langsung pindah
+                return; 
+            }
 
-        const { value: password } = await Swal.fire({
-            title: `Akses Terbatas`,
-            text: `Masukkan password untuk membuka ${menuName}:`,
-            input: 'password',
-            inputPlaceholder: 'Masukkan password...',
-            inputAttributes: {
-                autocapitalize: 'off',
-                autocorrect: 'off'
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Buka',
-            cancelButtonText: 'Batal',
-            showLoaderOnConfirm: true,
-            preConfirm: (pass) => {
-                if (pass === correctPassword) {
-                    return true;
-                } else {
-                    Swal.showValidationMessage(`Password salah!`);
-                    return false;
+            // Ambil password dari Firestore
+            let correctPassword;
+            try {
+                const doc = await db.collection("dashboard_data").doc("menu_passwords").get();
+                if (!doc.exists) {
+                    Swal.fire('Error', 'Dokumen password tidak ditemukan!', 'error');
+                    return;
                 }
-            },
-            allowOutsideClick: () => !Swal.isLoading()
-        });
+                correctPassword = doc.data()[menuFieldName];
+            } catch (e) {
+                Swal.fire('Error DB', e.message, 'error');
+                return;
+            }
 
-        if (password) {
-            // Jika password benar, arahkan ke halaman
-            window.location.href = targetUrl;
+            // Tampilkan pop-up
+            const { value: password } = await Swal.fire({
+                title: `Akses Terbatas`,
+                text: `Masukkan password untuk membuka ${menuTitle}:`,
+                input: 'password',
+                inputPlaceholder: 'Masukkan password...',
+                showCancelButton: true,
+                confirmButtonText: 'Buka',
+                cancelButtonText: 'Batal',
+                preConfirm: (pass) => {
+                    if (pass === correctPassword) {
+                        return true;
+                    } else {
+                        Swal.showValidationMessage(`Password salah!`);
+                        return false;
+                    }
+                },
+                allowOutsideClick: false
+            });
+
+            if (password) {
+                window.location.href = targetUrl;
+            }
         }
-    }
 
-    // 3. Pasang Listener ke Semua Tombol Menu yang Dilindungi
-    const menuPesanan = document.getElementById('menu-pesanan');
-    if (menuPesanan) {
-        menuPesanan.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPasswordPopup('Manajemen Pesanan', passwords.pesanan, 'pesanan.html');
-        });
-    }
+        // 3. Pasang Listener ke Semua Tombol Menu yang Dilindungi
+        const menuPesanan = document.getElementById('menu-pesanan');
+        if (menuPesanan) {
+            menuPesanan.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Manajemen Pesanan', 'pesanan', 'pesanan.html');
+            });
+        }
 
-    const menuProduk = document.getElementById('menu-produk');
-    if (menuProduk) {
-        menuProduk.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPasswordPopup('Manajemen Produk', passwords.produk, 'produk.html');
-        });
-    }
+        const menuProduk = document.getElementById('menu-produk');
+        if (menuProduk) {
+            menuProduk.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Manajemen Produk', 'produk', 'produk.html');
+            });
+        }
 
-    const menuStok = document.getElementById('menu-stok');
-    if (menuStok) {
-        menuStok.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPasswordPopup('Manajemen Stok', passwords.stok, 'stok.html');
-        });
-    }
-    
-    const menuCabang = document.getElementById('menu-cabang');
-    if (menuCabang) {
-        menuCabang.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPasswordPopup('Manajemen Cabang', passwords.cabang, 'cabang.html');
-        });
-    }
-    
-    const menuPengiriman = document.getElementById('menu-pengiriman');
-    if (menuPengiriman) {
-        menuPengiriman.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPasswordPopup('Manajemen Pengiriman', passwords.pengiriman, 'pengiriman.html');
-        });
-    }
+        const menuStok = document.getElementById('menu-stok');
+        if (menuStok) {
+            menuStok.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Manajemen Stok', 'stok', 'stok.html');
+            });
+        }
+        
+        const menuCabang = document.getElementById('menu-cabang');
+        if (menuCabang) {
+            menuCabang.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Manajemen Cabang', 'cabang', 'cabang.html');
+            });
+        }
+        
+        const menuPengiriman = document.getElementById('menu-pengiriman');
+        if (menuPengiriman) {
+            menuPengiriman.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Manajemen Pengiriman', 'pengiriman', 'pengiriman.html');
+            });
+        }
+    }); // Tutup onAuthStateChanged
 });
 // --- AKHIR BLOK KODE PROTEKSI ---

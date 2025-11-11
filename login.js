@@ -8,7 +8,6 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
-// ----------------------------------------------
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -25,10 +24,10 @@ loginForm.addEventListener('submit', (e) => {
         .then((userCredential) => {
             const user = userCredential.user;
 
-            // --- LOGIKA BARU BERBASIS PERAN (ROLE) ---
+            // --- LOGIKA BERBASIS PERAN (DIPERBAIKI) ---
             
-            // 1. Cek apakah Admin?
-            if (user.email === 'admin123@gmail.com') {
+            // 1. Cek apakah Admin ATAU Super Admin?
+            if (user.email === 'admin123@gmail.com' || user.email === 'superadmin@gmail.com') {
                 Swal.fire({
                     title: 'Login Admin Berhasil!', text: 'Mengarahkan ke dashboard...',
                     icon: 'success', timer: 2000, 
@@ -52,7 +51,7 @@ loginForm.addEventListener('submit', (e) => {
                             icon: 'success', timer: 2000,
                             showConfirmButton: false, allowOutsideClick: false
                         }).then(() => {
-                            window.location.href = 'lacak.html'; // <-- LANGSUNG KE LACAK.HTML
+                            window.location.href = 'lacak.html'; 
                         });
 
                     } else if (userData.role === "konsumen") {
@@ -73,6 +72,7 @@ loginForm.addEventListener('submit', (e) => {
                     }
                     
                 } else {
+                    // Ini error yang Anda dapatkan
                     auth.signOut();
                     Swal.fire('Login Gagal', 'Data pengguna Anda tidak ditemukan di database.', 'error');
                 }
