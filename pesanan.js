@@ -147,7 +147,7 @@ logoutButton.addEventListener('click', (e) => {
         window.location.href = 'login.html';
     });
 });
-// --- BLOK KODE PROTEKSI MENU (BARU - BACA DARI DB) ---
+// --- BLOK KODE PROTEKSI MENU (FINAL - DENGAN DASHBOARD) ---
 document.addEventListener('DOMContentLoaded', () => {
     // Tunggu firebase auth siap
     firebase.auth().onAuthStateChanged(user => {
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const currentUserEmail = user.email;
 
-        // 1. Fungsi Pop-up (Async dan Baca DB)
+        // 1. Fungsi Pop-up (Dengan Ikon Mata)
         async function showPasswordPopup(menuTitle, menuFieldName, targetUrl) {
             // Cek apakah sudah di halaman tujuan
             if (window.location.pathname.endsWith(targetUrl)) {
@@ -186,20 +186,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const { value: password } = await Swal.fire({
                 title: `Akses Terbatas`,
                 text: `Masukkan password untuk membuka ${menuTitle}:`,
-                input: 'password',
-                inputPlaceholder: 'Masukkan password...',
+                html: `
+                    <div style="position: relative;">
+                        <input type="password" id="swal-password-input" class="swal2-input" placeholder="Masukkan password..." style="padding-right: 45px;">
+                        <span id="swal-toggle-password" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #555;">
+                            <i class="fas fa-eye" id="swal-eye-icon"></i>
+                        </span>
+                    </div>
+                `,
                 showCancelButton: true,
                 confirmButtonText: 'Buka',
                 cancelButtonText: 'Batal',
-                preConfirm: (pass) => {
+                allowOutsideClick: false,
+                didOpen: () => {
+                    const passwordInput = document.getElementById('swal-password-input');
+                    const toggleButton = document.getElementById('swal-toggle-password');
+                    const eyeIcon = document.getElementById('swal-eye-icon');
+                    toggleButton.addEventListener('click', () => {
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            eyeIcon.classList.remove('fa-eye');
+                            eyeIcon.classList.add('fa-eye-slash');
+                        } else {
+                            passwordInput.type = 'password';
+                            eyeIcon.classList.remove('fa-eye-slash');
+                            eyeIcon.classList.add('fa-eye');
+                        }
+                    });
+                    passwordInput.focus();
+                },
+                preConfirm: () => {
+                    const pass = document.getElementById('swal-password-input').value;
                     if (pass === correctPassword) {
                         return true;
                     } else {
                         Swal.showValidationMessage(`Password salah!`);
                         return false;
                     }
-                },
-                allowOutsideClick: false
+                }
             });
 
             if (password) {
@@ -207,7 +231,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Pasang Listener ke Semua Tombol Menu yang Dilindungi
+        // 3. Pasang Listener ke Semua 6 Tombol Menu yang Dilindungi
+        
+        // --- TAMBAHKAN LISTENER DASHBOARD INI ---
+        const menuDashboard = document.getElementById('menu-dashboard');
+        if (menuDashboard) {
+            menuDashboard.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Dashboard', 'dashboard', 'admin-dashboard.html');
+            });
+        }
+        
         const menuPesanan = document.getElementById('menu-pesanan');
         if (menuPesanan) {
             menuPesanan.addEventListener('click', (e) => {

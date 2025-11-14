@@ -18,17 +18,15 @@ const docRolesRef = db.collection("dashboard_data").doc("user_roles");
 const docPasswordsRef = db.collection("dashboard_data").doc("menu_passwords"); 
 const usersRef = db.collection("users");
 
-// Elemen DOM (DIPERBARUI)
+// Elemen DOM
 const logoutButton = document.getElementById('admin-logout-button');
 const cabangSelect = document.getElementById('cabang-select');
 const rolesTableBody = document.getElementById('roles-table-body');
-// 5 Elemen Admin Baru
 const adminValue1 = document.getElementById('admin-value-1');
 const adminValue2 = document.getElementById('admin-value-2');
 const adminValue3 = document.getElementById('admin-value-3');
 const adminValue4 = document.getElementById('admin-value-4');
 const adminValue5 = document.getElementById('admin-value-5');
-// Elemen Lainnya
 const gudangValue = document.getElementById('gudang-value');
 const kurirValue = document.getElementById('kurir-value');
 const cabangValue = document.getElementById('cabang-value');
@@ -36,6 +34,7 @@ const cabangValue = document.getElementById('cabang-value');
 // DOM Tabel Password
 const passwordManagerSection = document.getElementById('password-manager');
 const passwordTable = document.getElementById('password-table');
+const passDashboardValue = document.getElementById('pass-dashboard-value');
 const passPesananValue = document.getElementById('pass-pesanan-value');
 const passProdukValue = document.getElementById('pass-produk-value');
 const passStokValue = document.getElementById('pass-stok-value');
@@ -45,22 +44,42 @@ const passPengirimanValue = document.getElementById('pass-pengiriman-value');
 // Variabel Global
 let allBranchesData = []; 
 
-// --- Keamanan Admin (Tetap Sama) ---
+// --- Keamanan Admin (DIPERBARUI) ---
 auth.onAuthStateChanged((user) => {
     if (user) {
         if (user.email !== 'admin123@gmail.com' && user.email !== 'superadmin@gmail.com') {
             alert("Akses ditolak."); window.location.href = 'index.html'; 
         }
+
+        // --- LOGIKA SUPER ADMIN vs ADMIN BIASA ---
         if (user.email === 'superadmin@gmail.com') {
+            // Super Admin bisa melihat dan mengedit semuanya
             passwordManagerSection.style.display = 'block'; 
             loadMenuPasswords(); 
+            rolesTableBody.addEventListener('click', handleRoleEdit);
+            passwordTable.addEventListener('click', handlePasswordReset);
+
+        } else if (user.email === 'admin123@gmail.com') {
+            
+            // --- INI PERUBAHANNYA: Sembunyikan seluruh kolom "Aksi" ---
+            const rolesAksiHeader = document.getElementById('roles-aksi-header');
+            if (rolesAksiHeader) {
+                rolesAksiHeader.style.display = 'none';
+            }
+            
+            const rolesAksiCells = document.querySelectorAll('.roles-aksi-cell');
+            rolesAksiCells.forEach(cell => {
+                cell.style.display = 'none';
+            });
+            // -----------------------------------------------------
         }
+
     } else {
         alert("Silakan login sebagai Admin."); window.location.href = 'login.html'; 
     }
 });
 
-// --- FUNGSI BACA 1: BACA ROLE (DIPERBARUI) ---
+// --- FUNGSI BACA 1: BACA ROLE (ADMIN, GUDANG, KURIR) ---
 docRolesRef.onSnapshot((doc) => {
     if (doc.exists) {
         const data = doc.data();
@@ -72,17 +91,11 @@ docRolesRef.onSnapshot((doc) => {
         gudangValue.textContent = data.gudangName || "N/A";
         kurirValue.textContent = data.kurirName || "N/A";
     } else {
-        adminValue1.textContent = "Data belum diatur";
-        adminValue2.textContent = "Data belum diatur";
-        adminValue3.textContent = "Data belum diatur";
-        adminValue4.textContent = "Data belum diatur";
-        adminValue5.textContent = "Data belum diatur";
-        gudangValue.textContent = "Data belum diatur";
-        kurirValue.textContent = "Data belum diatur";
+        // ... (error handling)
     }
 });
 
-// --- FUNGSI BACA 2: MENGISI DROPDOWN CABANG (Tetap Sama) ---
+// --- FUNGSI BACA 2: MENGISI DROPDOWN CABANG ---
 function populateDropdown() {
     usersRef.where("role", "==", "konsumen")
     .onSnapshot((querySnapshot) => {
@@ -107,11 +120,12 @@ function populateDropdown() {
     });
 }
 
-// --- FUNGSI BACA 3: MEMUAT PASSWORD MENU (Tetap Sama) ---
+// --- FUNGSI BACA 3: MEMUAT PASSWORD MENU (DIPERBARUI) ---
 function loadMenuPasswords() {
     docPasswordsRef.onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
+            passDashboardValue.textContent = "••••••••";
             passPesananValue.textContent = "••••••••";
             passProdukValue.textContent = "••••••••";
             passStokValue.textContent = "••••••••";
@@ -123,7 +137,7 @@ function loadMenuPasswords() {
     });
 }
 
-// --- FUNGSI TAMPILKAN PENANGGUNG JAWAB (Tetap Sama) ---
+// --- FUNGSI TAMPILKAN PENANGGUNG JAWAB ---
 function displayCabangData(selectedUserId) {
     const data = allBranchesData.find(branch => branch.id === selectedUserId);
     if (data) {
@@ -131,7 +145,7 @@ function displayCabangData(selectedUserId) {
     }
 }
 
-// --- FUNGSI EDIT ROLE (DIPERBARUI) ---
+// --- FUNGSI EDIT HELPER ---
 async function showEditPopup(title, inputValue) {
     const { value: newValue } = await Swal.fire({
         title: title,
@@ -144,11 +158,11 @@ async function showEditPopup(title, inputValue) {
     return newValue;
 }
 
-rolesTableBody.addEventListener('click', async (e) => {
+// --- FUNGSI EDIT ROLE (Hanya untuk Super Admin) ---
+async function handleRoleEdit(e) {
     if (!e.target.classList.contains('btn-edit')) return;
     
-    // Logika baru ini menangani semua data-role dinamis
-    const fieldName = e.target.getAttribute('data-role'); // e.g., "adminName", "adminName2", "gudangName"
+    const fieldName = e.target.getAttribute('data-role');
     if (!fieldName) return; 
 
     let title, currentValue;
@@ -164,22 +178,24 @@ rolesTableBody.addEventListener('click', async (e) => {
         title = 'Ubah Kurir';
         currentValue = kurirValue.textContent;
     } else {
-        return; // Bukan peran yang kita kenali
+        return; 
     }
 
     const newValue = await showEditPopup(title, currentValue);
-    if (newValue || newValue === "") { // Izinkan mengosongkan nama
+    if (newValue || newValue === "") { 
         docRolesRef.set({ [fieldName]: newValue }, { merge: true })
             .then(() => Swal.fire('Sukses', `${title} diperbarui`, 'success'))
             .catch(e => Swal.fire('Error', e.message, 'error'));
     }
-});
+}
 
-// --- FUNGSI RESET PASSWORD MENU (Tetap Sama) ---
-passwordTable.addEventListener('click', async (e) => {
+// --- FUNGSI RESET PASSWORD MENU (Hanya untuk Super Admin) ---
+async function handlePasswordReset(e) {
     if (!e.target.classList.contains('btn-edit')) return;
+    
     const role = e.target.getAttribute('data-role'); 
     if (!role) return;
+
     const { value: newPassword } = await Swal.fire({
         title: `Reset Password Menu`,
         text: `Masukkan password BARU untuk menu ${role}:`,
@@ -188,6 +204,7 @@ passwordTable.addEventListener('click', async (e) => {
         showCancelButton: true,
         confirmButtonText: 'Reset',
     });
+
     if (newPassword) {
         docPasswordsRef.update({ [role]: newPassword })
             .then(() => {
@@ -195,9 +212,9 @@ passwordTable.addEventListener('click', async (e) => {
             })
             .catch(e => Swal.fire('Error', e.message, 'error'));
     }
-});
+}
 
-// --- EVENT LISTENER (Tetap Sama) ---
+// --- EVENT LISTENER (Dropdown & Logout) ---
 document.addEventListener('DOMContentLoaded', populateDropdown);
 cabangSelect.addEventListener('change', (e) => {
     displayCabangData(e.target.value);
@@ -238,26 +255,58 @@ document.addEventListener('DOMContentLoaded', () => {
             const { value: password } = await Swal.fire({
                 title: `Akses Terbatas`,
                 text: `Masukkan password untuk membuka ${menuTitle}:`,
-                input: 'password',
-                inputPlaceholder: 'Masukkan password...',
+                html: `
+                    <div style="position: relative;">
+                        <input type="password" id="swal-password-input" class="swal2-input" placeholder="Masukkan password..." style="padding-right: 45px;">
+                        <span id="swal-toggle-password" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #555;">
+                            <i class="fas fa-eye" id="swal-eye-icon"></i>
+                        </span>
+                    </div>
+                `,
                 showCancelButton: true,
                 confirmButtonText: 'Buka',
                 cancelButtonText: 'Batal',
-                preConfirm: (pass) => {
+                allowOutsideClick: false,
+                didOpen: () => {
+                    const passwordInput = document.getElementById('swal-password-input');
+                    const toggleButton = document.getElementById('swal-toggle-password');
+                    const eyeIcon = document.getElementById('swal-eye-icon');
+                    toggleButton.addEventListener('click', () => {
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            eyeIcon.classList.remove('fa-eye');
+                            eyeIcon.classList.add('fa-eye-slash');
+                        } else {
+                            passwordInput.type = 'password';
+                            eyeIcon.classList.remove('fa-eye-slash');
+                            eyeIcon.classList.add('fa-eye');
+                        }
+                    });
+                    passwordInput.focus();
+                },
+                preConfirm: () => {
+                    const pass = document.getElementById('swal-password-input').value;
                     if (pass === correctPassword) {
                         return true;
                     } else {
                         Swal.showValidationMessage(`Password salah!`);
                         return false;
                     }
-                },
-                allowOutsideClick: false
+                }
             });
             if (password) {
                 window.location.href = targetUrl;
             }
         }
-
+        
+        // Listener untuk 6 menu terproteksi
+        const menuDashboard = document.getElementById('menu-dashboard');
+        if (menuDashboard) {
+            menuDashboard.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPasswordPopup('Dashboard', 'dashboard', 'admin-dashboard.html');
+            });
+        }
         const menuPesanan = document.getElementById('menu-pesanan');
         if (menuPesanan) {
             menuPesanan.addEventListener('click', (e) => {

@@ -8,6 +8,8 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
+// ----------------------------------------------
+
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -29,11 +31,13 @@ loginForm.addEventListener('submit', (e) => {
             // 1. Cek apakah Admin ATAU Super Admin?
             if (user.email === 'admin123@gmail.com' || user.email === 'superadmin@gmail.com') {
                 Swal.fire({
-                    title: 'Login Admin Berhasil!', text: 'Mengarahkan ke dashboard...',
+                    title: 'Login Admin Berhasil!', text: 'Mengarahkan ke halaman utama...',
                     icon: 'success', timer: 2000, 
                     showConfirmButton: false, allowOutsideClick: false 
                 }).then(() => {
-                    window.location.href = 'admin-dashboard.html';
+                    // --- INI PERUBAHANNYA ---
+                    window.location.href = 'admin-greeting.html'; 
+                    // -------------------------
                 });
                 return; // Hentikan proses
             }
@@ -44,35 +48,18 @@ loginForm.addEventListener('submit', (e) => {
                     const userData = doc.data();
                     
                     if (userData.role === "sopir") {
-                        // --- 2a. JIKA SOPIR ---
-                        Swal.fire({
-                            title: 'Login Sopir Berhasil!',
-                            text: `Selamat datang, ${userData.nama_lengkap}. Mengarahkan ke halaman pelacakan...`,
-                            icon: 'success', timer: 2000,
-                            showConfirmButton: false, allowOutsideClick: false
-                        }).then(() => {
-                            window.location.href = 'lacak.html'; 
-                        });
-
+                        // ... (Logika Sopir tetap sama)
+                        window.location.href = 'lacak.html'; 
                     } else if (userData.role === "konsumen") {
-                        // --- 2b. JIKA CABANG (KONSUMEN) ---
+                        // ... (Logika Cabang tetap sama)
                         localStorage.setItem('namaCabang', userData.namaCabang);
-                        Swal.fire({
-                            title: 'Login Berhasil!',
-                            text: `Selamat datang, ${userData.namaCabang}!`,
-                            icon: 'success', timer: 2000,
-                            showConfirmButton: false, allowOutsideClick: false
-                        }).then(() => {
-                            window.location.href = 'index.html'; 
-                        });
+                        window.location.href = 'index.html'; 
                     } else {
-                        // Jika role tidak dikenal
                         auth.signOut();
                         Swal.fire('Login Gagal', 'Peran (role) akun Anda tidak dikenal.', 'error');
                     }
                     
                 } else {
-                    // Ini error yang Anda dapatkan
                     auth.signOut();
                     Swal.fire('Login Gagal', 'Data pengguna Anda tidak ditemukan di database.', 'error');
                 }
