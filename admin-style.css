@@ -258,6 +258,38 @@ span.status-Active { background-color: #e6f7f0; color: #00875a; }
 /* =======================
    RESPONSIVE
 ======================== */
+/* =======================
+   STYLE PASSWORD DI TABEL
+======================== */
+.password-cell {
+    position: relative;
+    padding-right: 40px !important; /* Memberi ruang untuk ikon */
+}
+.password-cell input {
+    width: 100%;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: inherit;
+    padding: 0;
+    pointer-events: none; /* Agar tidak bisa diklik/fokus */
+}
+/* Fix untuk browser yang memberi background pada input disabled */
+.password-cell input:disabled {
+    background-color: transparent;
+}
+.table-toggle-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+.table-toggle-icon:hover {
+    color: #333;
+}
 @media screen and (max-width: 768px) {
     .admin-wrapper { flex-direction: column; }
     .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; }

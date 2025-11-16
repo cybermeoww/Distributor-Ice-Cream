@@ -8,6 +8,8 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
+// ----------------------------------------------
+
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -34,12 +36,7 @@ const cabangValue = document.getElementById('cabang-value');
 // DOM Tabel Password
 const passwordManagerSection = document.getElementById('password-manager');
 const passwordTable = document.getElementById('password-table');
-const passDashboardValue = document.getElementById('pass-dashboard-value');
-const passPesananValue = document.getElementById('pass-pesanan-value');
-const passProdukValue = document.getElementById('pass-produk-value');
-const passStokValue = document.getElementById('pass-stok-value');
-const passCabangValue = document.getElementById('pass-cabang-value');
-const passPengirimanValue = document.getElementById('pass-pengiriman-value');
+// (Elemen untuk text password dihapus, kita akan target input langsung)
 
 // Variabel Global
 let allBranchesData = []; 
@@ -57,21 +54,19 @@ auth.onAuthStateChanged((user) => {
             passwordManagerSection.style.display = 'block'; 
             loadMenuPasswords(); 
             rolesTableBody.addEventListener('click', handleRoleEdit);
-            passwordTable.addEventListener('click', handlePasswordReset);
+            // Listener gabungan untuk tabel password (Reset + Reveal)
+            passwordTable.addEventListener('click', handlePasswordTableClicks);
 
         } else if (user.email === 'admin123@gmail.com') {
-            
-            // --- INI PERUBAHANNYA: Sembunyikan seluruh kolom "Aksi" ---
+            // Sembunyikan seluruh kolom "Aksi"
             const rolesAksiHeader = document.getElementById('roles-aksi-header');
             if (rolesAksiHeader) {
                 rolesAksiHeader.style.display = 'none';
             }
-            
             const rolesAksiCells = document.querySelectorAll('.roles-aksi-cell');
             rolesAksiCells.forEach(cell => {
                 cell.style.display = 'none';
             });
-            // -----------------------------------------------------
         }
 
     } else {
@@ -91,7 +86,14 @@ docRolesRef.onSnapshot((doc) => {
         gudangValue.textContent = data.gudangName || "N/A";
         kurirValue.textContent = data.kurirName || "N/A";
     } else {
-        // ... (error handling)
+        // Tampilkan error jika dokumen tidak ada
+        adminValue1.textContent = "Data Error";
+        adminValue2.textContent = "Data Error";
+        adminValue3.textContent = "Data Error";
+        adminValue4.textContent = "Data Error";
+        adminValue5.textContent = "Data Error";
+        gudangValue.textContent = "Data Error";
+        kurirValue.textContent = "Data Error";
     }
 });
 
@@ -125,12 +127,13 @@ function loadMenuPasswords() {
     docPasswordsRef.onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
-            passDashboardValue.textContent = "••••••••";
-            passPesananValue.textContent = "••••••••";
-            passProdukValue.textContent = "••••••••";
-            passStokValue.textContent = "••••••••";
-            passCabangValue.textContent = "••••••••";
-            passPengirimanValue.textContent = "••••••••";
+            // Mengisi nilai ke input field, bukan text
+            document.getElementById('pass-dashboard-input').value = data.dashboard || "";
+            document.getElementById('pass-pesanan-input').value = data.pesanan || "";
+            document.getElementById('pass-produk-input').value = data.produk || "";
+            document.getElementById('pass-stok-input').value = data.stok || "";
+            document.getElementById('pass-cabang-input').value = data.cabang || "";
+            document.getElementById('pass-pengiriman-input').value = data.pengiriman || "";
         } else {
             Swal.fire('Error Kritis', 'Dokumen "menu_passwords" tidak ditemukan di Firestore!', 'error');
         }
@@ -189,28 +192,79 @@ async function handleRoleEdit(e) {
     }
 }
 
-// --- FUNGSI RESET PASSWORD MENU (Hanya untuk Super Admin) ---
-async function handlePasswordReset(e) {
-    if (!e.target.classList.contains('btn-edit')) return;
+// --- FUNGSI PASSWORD TABLE (GABUNGAN: RESET + TOGGLE MATA) ---
+async function handlePasswordTableClicks(e) {
     
-    const role = e.target.getAttribute('data-role'); 
-    if (!role) return;
+    // 1. Logika Tombol RESET
+    if (e.target.classList.contains('btn-edit')) {
+        const role = e.target.getAttribute('data-role'); 
+        if (!role) return;
 
-    const { value: newPassword } = await Swal.fire({
-        title: `Reset Password Menu`,
-        text: `Masukkan password BARU untuk menu ${role}:`,
-        input: 'text',
-        inputPlaceholder: 'Password baru...',
-        showCancelButton: true,
-        confirmButtonText: 'Reset',
-    });
+        const { value: newPassword } = await Swal.fire({
+            title: `Reset Password Menu`,
+            text: `Masukkan password BARU untuk menu ${role}:`,
+            html: `
+                <div style="position: relative; margin-top: 10px;">
+                    <input type="password" id="swal-new-password" class="swal2-input" placeholder="Password baru..." style="padding-right: 45px;">
+                    <span id="swal-toggle-new-password" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #555;">
+                        <i class="fas fa-eye" id="swal-new-eye-icon"></i>
+                    </span>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Reset',
+            allowOutsideClick: false,
+            didOpen: () => {
+                const passwordInput = document.getElementById('swal-new-password');
+                const toggleButton = document.getElementById('swal-toggle-new-password');
+                const eyeIcon = document.getElementById('swal-new-eye-icon');
+                
+                toggleButton.addEventListener('click', () => {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        eyeIcon.classList.remove('fa-eye');
+                        eyeIcon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        eyeIcon.classList.remove('fa-eye-slash');
+                        eyeIcon.classList.add('fa-eye');
+                    }
+                });
+                passwordInput.focus();
+            },
+            preConfirm: () => {
+                const pass = document.getElementById('swal-new-password').value;
+                if (!pass || pass.trim() === "") {
+                    Swal.showValidationMessage('Password tidak boleh kosong');
+                    return false;
+                }
+                return pass;
+            }
+        });
 
-    if (newPassword) {
-        docPasswordsRef.update({ [role]: newPassword })
-            .then(() => {
-                Swal.fire('Sukses!', `Password untuk menu ${role} telah direset.`, 'success');
-            })
-            .catch(e => Swal.fire('Error', e.message, 'error'));
+        if (newPassword) {
+            docPasswordsRef.update({ [role]: newPassword })
+                .then(() => {
+                    Swal.fire('Sukses!', `Password untuk menu ${role} telah direset.`, 'success');
+                })
+                .catch(e => Swal.fire('Error', e.message, 'error'));
+        }
+    }
+
+    // 2. Logika Tombol MATA di TABEL
+    if (e.target.classList.contains('table-toggle-icon')) {
+        const targetInputId = e.target.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetInputId);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            e.target.classList.remove('fa-eye');
+            e.target.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            e.target.classList.remove('fa-eye-slash');
+            e.target.classList.add('fa-eye');
+        }
     }
 }
 

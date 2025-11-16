@@ -170,3 +170,22 @@ h2 {
 }
 /* Untuk halaman register, Anda bisa copy paste CSS ini atau membuat CSS terpisah */
 /* Pastikan ada file register.html yang mirip dengan login.html */
+/* ... (style Anda sebelumnya) ... */
+
+/* TAMBAHKAN KODE INI */
+.input-group {
+    position: relative; /* Wajib agar ikon bisa diposisikan */
+}
+
+.password-toggle-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ccc;
+    cursor: pointer;
+    z-index: 10;
+}
+.password-toggle-icon:hover {
+    color: #fff;
+}
