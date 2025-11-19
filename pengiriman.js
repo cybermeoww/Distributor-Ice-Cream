@@ -7,6 +7,7 @@ const firebaseConfig = {
   appId: "1:437181740843:web:41890cdedddc45b903776e",
   measurementId: "G-3YJY51SZ90"
 };
+
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -15,7 +16,7 @@ const db = firebase.firestore();
 // Referensi
 const ordersRef = db.collection("orders");
 const pengirimanRef = db.collection("pengiriman"); 
-const usersRef = db.collection("users"); // <-- BUTUH AKSES KE USERS
+const usersRef = db.collection("users");
 
 // Elemen DOM
 const logoutButton = document.getElementById('admin-logout-button');
@@ -23,6 +24,8 @@ const deliveryTableBody = document.getElementById('delivery-table-body');
 const productSelect = document.getElementById('product-view-select');
 const pageTitle = document.getElementById('page-title');
 const tableTitle = document.getElementById('table-title');
+
+// DOM Modal Peta
 const mapModal = document.getElementById('map-modal');
 const closeMapModal = document.getElementById('close-map-modal');
 const mapIframe = document.getElementById('map-iframe');
@@ -36,7 +39,7 @@ const productId = (productView === 'jagung') ? 'jagung-001' : 'durian-002';
 const docRef = db.collection("dashboard_data").doc(productView);
 let currentKodeProduk = "Memuat...";
 let liveListener = null; 
-let sopirList = []; // <-- UNTUK MENYIMPAN DAFTAR SOPIR
+let sopirList = []; 
 
 // --- Keamanan Admin ---
 auth.onAuthStateChanged((user) => {
@@ -49,24 +52,22 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// --- BACA DATA PRODUK (Untuk ambil Kode & Nama) ---
+// --- BACA DATA PRODUK (Untuk Judul & Kode) ---
 docRef.onSnapshot((doc) => {
     if (doc.exists) {
         const data = doc.data();
         currentKodeProduk = data.kodeProduk || "N/A";
         const namaProduk = data.namaProduk || "Produk";
         
-        productSelect.value = productView;
-        pageTitle.textContent = `Distribusi & Pengiriman (${namaProduk})`;
-        tableTitle.textContent = `Daftar Pengiriman (${namaProduk})`;
-    } else {
-        console.log(`Dokumen '${productView}' tidak ditemukan!`);
+        if(productSelect) productSelect.value = productView;
+        if(pageTitle) pageTitle.textContent = `Distribusi & Pengiriman (${namaProduk})`;
+        if(tableTitle) tableTitle.textContent = `Daftar Pengiriman (${namaProduk})`;
     }
 });
 
-// --- FUNGSI BARU: AMBIL DAFTAR SOPIR ---
+// --- AMBIL DAFTAR SOPIR ---
 async function fetchSopirList() {
-    sopirList = []; // Kosongkan dulu
+    sopirList = []; 
     const querySnapshot = await usersRef.where("role", "==", "sopir").get();
     querySnapshot.forEach(doc => {
         sopirList.push({
@@ -76,12 +77,13 @@ async function fetchSopirList() {
     });
 }
 
-// --- FUNGSI UTAMA: BACA DATA (FIXED: Filter manual) ---
+// --- FUNGSI UTAMA: BACA DATA TABEL ---
 function displayDeliveries() {
     ordersRef
         .orderBy("tanggal", "desc") 
         .onSnapshot(async (querySnapshot) => { 
             
+            // Ambil data pengiriman terbaru setiap kali ada perubahan
             const pengirimanSnapshot = await pengirimanRef.get();
             const existingPengiriman = {};
             pengirimanSnapshot.forEach(doc => {
@@ -95,6 +97,7 @@ function displayDeliveries() {
                 const order = doc.data();
                 const orderId = doc.id;
 
+                // Filter: Hanya status Active/Completed DAN Produk yang sesuai
                 if (order.status === 'Active' || order.status === 'Completed') {
                     if (order.productIds && order.productIds.includes(productId)) {
                     
@@ -109,13 +112,14 @@ function displayDeliveries() {
                         let aksiButton = `<button class="btn-info btn-input-delivery" data-order-id="${orderId}">Input Pengiriman</button>`;
 
                         if (deliveryData) {
-                            sopir = deliveryData.sopirName; // <-- Ambil nama
+                            sopir = deliveryData.sopirName || deliveryData.sopir; // Support format lama/baru
                             kendaraan = deliveryData.kendaraan;
                             rute = deliveryData.rute;
                             
+                            // Dropdown Status + Tombol Lacak
                             aksiButton = `
-                                <button class="btn-info btn-lacak" data-id="${orderId}">Lacak</button>
-                                <select class="status-select-delivery status-${deliveryData.status}" data-id="${orderId}">
+                                <button class="btn-info btn-lacak" data-id="${orderId}" style="margin-right:5px;">Lacak</button>
+                                <select class="status-select-delivery" data-id="${orderId}" style="padding: 5px;">
                                     <option value="Pending" ${deliveryData.status === 'Pending' ? 'selected' : ''}>Menunggu Dikirim</option>
                                     <option value="Active" ${deliveryData.status === 'Active' ? 'selected' : ''}>Sedang Dikirim</option>
                                     <option value="Completed" ${deliveryData.status === 'Completed' ? 'selected' : ''}>Selesai Dikirim</option>
@@ -145,12 +149,48 @@ function displayDeliveries() {
         });
 }
 
-// --- FUNGSI POP-UP INPUT PENGIRIMAN (LOGIKA BARU) ---
+// --- FUNGSI UPDATE STATUS PENGIRIMAN (FIXED: AUTO REFRESH) ---
+deliveryTableBody.addEventListener('change', async (e) => {
+    if (e.target.classList.contains('status-select-delivery')) {
+        const newStatus = e.target.value;
+        const id = e.target.getAttribute('data-id'); 
+
+        try {
+            // 1. Update status di tabel 'pengiriman'
+            await pengirimanRef.doc(id).update({ status: newStatus });
+
+            // 2. Update status di tabel 'orders' (Sinkronisasi)
+            if (newStatus === 'Completed') {
+                await ordersRef.doc(id).update({ status: 'Completed' });
+            } else {
+                await ordersRef.doc(id).update({ status: 'Active' });
+            }
+
+            // 3. Notifikasi Sukses
+            await Swal.fire({
+                title: 'Status Diperbarui!',
+                text: 'Data tersimpan. Halaman akan dimuat ulang.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // 4. REFRESH HALAMAN (Solusi agar status tidak "mental" balik)
+            window.location.reload();
+
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    }
+});
+
+// --- FUNGSI POP-UP INPUT PENGIRIMAN (PILIH SOPIR) ---
 deliveryTableBody.addEventListener('click', async (e) => {
+    // INPUT PENGIRIMAN
     if (e.target.classList.contains('btn-input-delivery')) {
         const orderId = e.target.getAttribute('data-order-id');
 
-        // Buat HTML untuk dropdown sopir
         let sopirOptions = '';
         if (sopirList.length === 0) {
             sopirOptions = '<option value="">Error: Belum ada sopir terdaftar</option>';
@@ -187,8 +227,8 @@ deliveryTableBody.addEventListener('click', async (e) => {
 
         if (formValues) {
             pengirimanRef.doc(orderId).set({
-                sopirId: formValues.sopirId, // <-- Simpan ID Sopir
-                sopirName: formValues.sopirName, // <-- Simpan Nama Sopir
+                sopirId: formValues.sopirId,
+                sopirName: formValues.sopirName,
                 kendaraan: formValues.kendaraan,
                 rute: formValues.rute,
                 status: "Pending", 
@@ -197,14 +237,15 @@ deliveryTableBody.addEventListener('click', async (e) => {
                 latitude: null,
                 longitude: null
             })
-            .then(() => {
-                Swal.fire('Sukses!', 'Pengiriman telah ditugaskan ke sopir.', 'success');
+            .then(async () => {
+                await Swal.fire('Sukses!', 'Pengiriman telah ditugaskan.', 'success');
+                window.location.reload(); // Refresh agar tombol berubah
             })
             .catch(e => Swal.fire('Error', e.message, 'error'));
         }
     }
     
-    // FUNGSI TOMBOL LACAK DIKLIK
+    // TOMBOL LACAK (LIVE MAPS)
     if (e.target.classList.contains('btn-lacak')) {
         const orderId = e.target.getAttribute('data-id');
         const docToListen = pengirimanRef.doc(orderId);
@@ -214,9 +255,8 @@ deliveryTableBody.addEventListener('click', async (e) => {
         liveListener = docToListen.onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
-                
                 mapSopirName.textContent = data.sopirName;
-                mapKodeLacak.textContent = "Pelacakan Aktif"; // Kode lacak tidak diperlukan lagi
+                mapKodeLacak.textContent = "Pelacakan Aktif";
                 
                 if (data.latitude && data.longitude) {
                     mapIframe.src = `https://maps.google.com/maps?q=${data.latitude},${data.longitude}&z=15&output=embed`;
@@ -231,33 +271,32 @@ deliveryTableBody.addEventListener('click', async (e) => {
     }
 });
 
-// --- FUNGSI UPDATE STATUS PENGIRIMAN (Dropdown) ---
-deliveryTableBody.addEventListener('change', (e) => {
-    // ... (kode 'change' Anda tetap sama persis)
-});
-
-// --- EVENT LISTENER MODAL & DROPDOWN ---
-closeMapModal.addEventListener('click', () => {
-    mapModal.style.display = 'none';
-    if (liveListener) liveListener(); 
-});
-productSelect.addEventListener('change', (e) => {
-    localStorage.setItem('currentProductView', e.target.value);
-    window.location.reload();
-});
+// --- EVENT LISTENER UMUM ---
+if (closeMapModal) {
+    closeMapModal.addEventListener('click', () => {
+        mapModal.style.display = 'none';
+        if (liveListener) liveListener(); 
+    });
+}
+if (productSelect) {
+    productSelect.addEventListener('change', (e) => {
+        localStorage.setItem('currentProductView', e.target.value);
+        window.location.reload();
+    });
+}
 
 // --- INITIAL LOAD & LOGOUT ---
 document.addEventListener('DOMContentLoaded', () => {
-    fetchSopirList(); // Ambil daftar sopir dulu
-    displayDeliveries(); // Baru tampilkan tabel
+    fetchSopirList(); 
+    displayDeliveries(); 
 });
-
 logoutButton.addEventListener('click', (e) => {
     e.preventDefault();
     auth.signOut().then(() => {
         window.location.href = 'login.html';
     });
 });
+
 // --- BLOK KODE PROTEKSI MENU (FINAL - DENGAN DASHBOARD) ---
 document.addEventListener('DOMContentLoaded', () => {
     // Tunggu firebase auth siap
