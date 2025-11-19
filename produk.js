@@ -9,22 +9,17 @@ const firebaseConfig = {
   measurementId: "G-3YJY51SZ90"
 };
 
-// Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// =============================================
-// LOGIKA BARU: PEMBACA PRODUK (PRODUCT READER)
-// =============================================
+// LOGIKA PRODUK READER & SELECTOR
 let productView = localStorage.getItem('currentProductView') || 'jagung';
 const productId = (productView === 'jagung') ? 'jagung-001' : 'durian-002';
 const docRef = db.collection("dashboard_data").doc(productView);
-
-// Referensi lain
 const ordersRef = db.collection("orders");
 
-// Elemen DOM
+// DOM
 const logoutButton = document.getElementById('admin-logout-button');
 const kodeValue = document.getElementById('kode-value');
 const namaValue = document.getElementById('nama-value');
@@ -32,139 +27,95 @@ const hargaValue = document.getElementById('harga-value');
 const satuanValue = document.getElementById('satuan-value');
 const stokValue = document.getElementById('stok-value');
 const statusValue = document.getElementById('status-value');
-const pageTitle = document.querySelector('.main-content .header h2'); // Ambil judul halaman
+// DOM BARU
+const productSelect = document.getElementById('product-view-select');
+const pageTitle = document.getElementById('page-title');
 
-// Variabel Global
+// Set Nilai Awal Dropdown
+if (productSelect) productSelect.value = productView;
+
 let currentStokMasuk = 0;
 let currentStokKeluar = 0;
 
-// --- Keamanan Admin ---
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        if (user.email !== 'admin123@gmail.com' && user.email !== 'superadmin@gmail.com') {
-            alert("Akses ditolak."); window.location.href = 'index.html'; 
-        }
-    } else {
-        alert("Silakan login sebagai Admin."); window.location.href = 'login.html'; 
-    }
-});
-
-// --- Fungsi Global (tetap sama) ---
+// Fungsi Format & Update
 function formatRupiah(number) {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency', currency: 'IDR', minimumFractionDigits: 0
-    }).format(number);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 }
 function updateSisaStokDisplay() {
     const sisaStok = currentStokMasuk - currentStokKeluar;
     stokValue.textContent = `${sisaStok} Pcs`;
-    statusValue.textContent = (sisaStok > 1000) ? "Aman" : "Stok Menipis";
 }
 
-// --- BACA DATA STOK KELUAR (DARI ORDERS) (Dinamis) ---
+// --- BACA DATA (Sama seperti sebelumnya) ---
 ordersRef.onSnapshot((querySnapshot) => {
     let totalKeluar = 0;
     querySnapshot.forEach(doc => {
         const order = doc.data();
-        // Filter dinamis
-        if (order.productIds && order.productIds.includes(productId)) { 
-            const itemDipesan = order.items.find(item => item.id === productId);
-            const jumlahPcs = itemDipesan ? itemDipesan.quantity : 0;
-            totalKeluar += jumlahPcs;
+        if (order.productIds && order.productIds.includes(productId)) {
+            // HANYA HITUNG YANG COMPLETED (SELESAI) UNTUK PENGURANGAN STOK GUDANG UTAMA
+            if (order.status === 'Completed') {
+                const itemDipesan = order.items.find(item => item.id === productId);
+                totalKeluar += (itemDipesan ? itemDipesan.quantity : 0);
+            }
         }
     });
     currentStokKeluar = totalKeluar;
     updateSisaStokDisplay(); 
 });
 
-// --- BACA DATA PRODUK (LIVE) (Dinamis) ---
 docRef.onSnapshot((doc) => {
     if (doc.exists) {
         const data = doc.data();
         currentStokMasuk = data.stokMasuk || 0;
-        
         kodeValue.textContent = data.kodeProduk || "N/A";
         namaValue.textContent = data.namaProduk || "N/A";
         hargaValue.textContent = formatRupiah(data.harga || 0);
         satuanValue.textContent = data.satuan || "N/A";
+        statusValue.textContent = data.status || "N/A";
         
-        // Update judul halaman
-        pageTitle.textContent = `Manajemen Produk: ${data.namaProduk || 'Error'}`;
+        // Update Judul Halaman
+        if (pageTitle) pageTitle.textContent = `Manajemen Produk: ${data.namaProduk}`;
         
         updateSisaStokDisplay();
-    } else {
-        pageTitle.textContent = `Manajemen Produk: Error`;
-        console.log(`Dokumen '${productView}' tidak ditemukan!`);
     }
 });
 
-// --- FUNGSI EDIT (UPDATE) ---
+// --- EVENT LISTENER DROPDOWN ---
+productSelect.addEventListener('change', (e) => {
+    localStorage.setItem('currentProductView', e.target.value);
+    window.location.reload(); // Refresh untuk ganti data
+});
 
+// --- FUNGSI EDIT (Standard) ---
 async function showEditPopup(title, inputValue, inputType = 'text') {
     const { value: newValue } = await Swal.fire({
-        title: title,
-        input: inputType,
-        inputValue: inputValue,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan',
-        cancelButtonText: 'Batal'
+        title: title, input: inputType, inputValue: inputValue,
+        showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal'
     });
     return newValue;
 }
-
-// 1. Edit Kode Produk
 document.getElementById('card-kode').addEventListener('click', async () => {
-    const newValue = await showEditPopup('Ubah Kode Produk', kodeValue.textContent);
-    if (newValue) {
-        docRef.update({ kodeProduk: newValue })
-            .then(() => Swal.fire('Sukses', 'Kode Produk diperbarui', 'success'))
-            .catch(e => Swal.fire('Error', e.message, 'error'));
-    }
+    const newValue = await showEditPopup('Ubah Kode', kodeValue.textContent);
+    if (newValue) docRef.update({ kodeProduk: newValue });
 });
-
-// 2. Edit Nama Produk
 document.getElementById('card-nama').addEventListener('click', async () => {
-    const newValue = await showEditPopup('Ubah Nama Produk', namaValue.textContent);
-    if (newValue) {
-        docRef.update({ namaProduk: newValue })
-            .then(() => Swal.fire('Sukses', 'Nama Produk diperbarui', 'success'))
-            .catch(e => Swal.fire('Error', e.message, 'error'));
-    }
+    const newValue = await showEditPopup('Ubah Nama', namaValue.textContent);
+    if (newValue) docRef.update({ namaProduk: newValue });
 });
-
-// 3. Edit Harga
 document.getElementById('card-harga').addEventListener('click', async () => {
     const currentPrice = parseInt(hargaValue.textContent.replace(/[^0-9]/g, '')) || 0;
-    const newValue = await showEditPopup('Ubah Harga (angka saja)', currentPrice, 'number');
-    if (newValue || newValue === 0) {
-        docRef.update({ harga: parseInt(newValue) })
-            .then(() => Swal.fire('Sukses', 'Harga diperbarui', 'success'))
-            .catch(e => Swal.fire('Error', e.message, 'error'));
-    }
+    const newValue = await showEditPopup('Ubah Harga', currentPrice, 'number');
+    if (newValue) docRef.update({ harga: parseInt(newValue) });
 });
-
-// 4. Edit Satuan
 document.getElementById('card-satuan').addEventListener('click', async () => {
     const newValue = await showEditPopup('Ubah Satuan', satuanValue.textContent);
-    if (newValue) {
-        docRef.update({ satuan: newValue })
-            .then(() => Swal.fire('Sukses', 'Satuan diperbarui', 'success'))
-            .catch(e => Swal.fire('Error', e.message, 'error'));
-    }
+    if (newValue) docRef.update({ satuan: newValue });
 });
-
-// 5. HAPUS FUNGSI EDIT STOK
-// document.getElementById('card-stok').addEventListener(...) Dihapus
-
-// 6. Edit Status
 document.getElementById('card-status').addEventListener('click', async () => {
     const newValue = await showEditPopup('Ubah Status', statusValue.textContent);
-    if (newValue) {
-        docRef.update({ status: newValue })
-            .then(() => Swal.fire('Sukses', 'Status diperbarui', 'success'))
-            .catch(e => Swal.file('Error', e.message, 'error'));
-    }
+    if (newValue) docRef.update({ status: newValue });
 });
+
 
 // --- LOGOUT ---
 logoutButton.addEventListener('click', (e) => {

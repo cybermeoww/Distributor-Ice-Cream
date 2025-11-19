@@ -19,7 +19,7 @@
                 <li><a href="admin-greeting.html"><i class="fas fa-home"></i> Halaman Utama</a></li>
                 <li><a href="#" id="menu-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="#" id="menu-pesanan"><i class="fas fa-box"></i> Manajemen Pesanan Gudang</a></li>
-                <li><a href="#" id="menu-produk" class="active"><i class="fas fa-ice-cream"></i> Manajemen Produk</a></li>
+                <li><a href="produk.html" class="active"><i class="fas fa-ice-cream"></i> Manajemen Produk</a></li>
                 <li><a href="#" id="menu-stok"><i class="fas fa-warehouse"></i> Manajemen Stok</a></li>
                 <li><a href="#" id="menu-cabang"><i class="fas fa-store"></i> Manajemen Cabang</a></li>
                 <li><a href="#" id="menu-pengiriman"><i class="fas fa-truck"></i> Distribusi & Pengiriman</a></li>
@@ -30,9 +30,16 @@
 
         <main class="main-content">
             <header class="header">
-                <h2>Manajemen Produk: Es Krim Jagung</h2>
+                <h2 id="page-title">Manajemen Produk</h2>
                 <div class="header-user">
                     <span>Selamat Datang, Admin</span>
+                    <div class="product-selector">
+                        <label for="product-view-select">Lihat Data:</label>
+                        <select id="product-view-select">
+                            <option value="jagung">Es Krim Jagung</option>
+                            <option value="durian">Es Krim Durian</option>
+                        </select>
+                    </div>
                 </div>
             </header>
 
