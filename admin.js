@@ -155,12 +155,34 @@ editNotifButton.addEventListener('click', async () => {
 // --- 5. FUNGSI UPDATE STATUS & HAPUS (Tetap Sama) ---
 ordersTableBody.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-delete-order')) {
-        // ... (kode hapus Anda tetap sama)
+        const orderId = e.target.getAttribute('data-id');
+        Swal.fire({
+            title: 'Anda yakin?', text: "Pesanan akan dihapus permanen!",
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d33', confirmButtonText: 'Ya, hapus!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                db.collection("orders").doc(orderId).delete()
+                    .then(() => Swal.fire('Dihapus!', 'Pesanan telah dihapus.', 'success'))
+                    .catch(e => Swal.fire('Error', e.message, 'error'));
+            }
+        });
     }
 });
 ordersTableBody.addEventListener('change', (e) => {
     if (e.target.classList.contains('status-select')) {
-        // ... (kode ubah status Anda tetap sama)
+        const newStatus = e.target.value;
+        const orderId = e.target.getAttribute('data-id');
+        db.collection("orders").doc(orderId).update({ status: newStatus })
+        .then(() => {
+            e.target.className = `status-select status-${newStatus}`;
+            Swal.fire({
+                title: 'Status Diperbarui!', icon: 'success', timer: 1000,
+                showConfirmButton: false, toast: true, position: 'top-end'
+            });
+            // Hitung ulang stok karena status berubah
+            hitungTotalStokKeluarReal();
+        });
     }
 });
 
