@@ -302,3 +302,131 @@ span.status-Active { background-color: #e6f7f0; color: #00875a; }
     .header h2 { font-size: 1.2rem; }
     .card-container, .table-container { padding: 15px; margin: 15px; }
 }
+
+/* ============================
+   STYLE KHUSUS HALAMAN UTAMA (GREETING)
+============================ */
+
+/* Container untuk 2 Kartu Gambar */
+.greeting-cards-container {
+    display: flex;
+    gap: 30px; /* Jarak antar kartu */
+    justify-content: center; /* Posisi tengah */
+    flex-wrap: wrap; /* Agar turun ke bawah di layar kecil */
+    margin-bottom: 40px; /* Jarak ke teks bawah */
+    margin-top: 20px;
+}
+
+/* Desain Kartu Gambar */
+.greeting-card {
+    background: #fff;
+    border-radius: 15px; /* Sudut membulat */
+    overflow: hidden; /* Agar gambar tidak keluar dari border radius */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Bayangan lembut */
+    flex: 1 1 650px; /* Lebar fleksibel, minimal 350px */
+    max-width: 500px; /* Lebar maksimal */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+/* Efek saat mouse diarahkan ke kartu */
+.greeting-card:hover {
+    transform: translateY(-10px); /* Naik sedikit */
+    box-shadow: 0 15px 30px rgba(58, 123, 213, 0.2); /* Bayangan makin jelas */
+}
+
+/* Gambar di dalam kartu */
+.greeting-card img {
+    width: 100%;
+    height: 500px; /* Tinggi gambar tetap */
+    object-fit: cover; /* Gambar mengisi area tanpa gepeng */
+    border-bottom: 4px solid #f4f7f6;
+}
+
+/* Area teks di dalam kartu */
+.greeting-card-content {
+    padding: 25px;
+}
+
+.greeting-card-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.4rem;
+}
+
+.greeting-card-content h3 i {
+    margin-right: 10px;
+    color: #3a7bd5; /* Warna ikon sama dengan tema */
+}
+
+.greeting-card-content p {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Bagian Kata-kata di Bawah */
+.greeting-caption {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto; /* Tengah secara horizontal */
+    padding: 30px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.greeting-caption h3 {
+    color: #444;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.greeting-caption p {
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+/* Responsif untuk layar kecil */
+@media screen and (max-width: 768px) {
+    .greeting-cards-container {
+        flex-direction: column; /* Tumpuk ke bawah di HP */
+        align-items: center;
+    }
+    .greeting-card {
+        width: 100%; /* Lebar penuh di HP */
+    }
+}
+
+/* =======================
+   TOMBOL HAPUS CABANG
+======================== */
+.selector-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.selector-wrapper select {
+    flex-grow: 1; /* Dropdown mengambil sisa ruang */
+}
+
+.btn-danger {
+    background-color: #e74c3c; /* Merah */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    white-space: nowrap; /* Teks tidak turun baris */
+}
+
+.btn-danger:hover {
+    background-color: #c0392b; /* Merah Gelap */
+}

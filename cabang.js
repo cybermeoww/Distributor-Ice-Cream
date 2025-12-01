@@ -23,26 +23,27 @@ const ordersRef = db.collection("orders");
 // DOM
 const logoutButton = document.getElementById('admin-logout-button');
 const cabangSelect = document.getElementById('cabang-select');
+const btnDeleteCabang = document.getElementById('btn-delete-cabang'); // TOMBOL BARU
 const alamatValue = document.getElementById('alamat-value');
 const stokValue = document.getElementById('stok-value');
 const permintaanValue = document.getElementById('permintaan-value');
 const statusValue = document.getElementById('status-value');
-// DOM BARU
 const productSelect = document.getElementById('product-view-select');
 const pageTitle = document.getElementById('page-title');
 
 if (productSelect) productSelect.value = productView;
-// Update judul agar user tahu sedang lihat data apa
 if (pageTitle) pageTitle.textContent = `Manajemen Cabang (${productView === 'jagung' ? 'Jagung' : 'Durian'})`;
 
 let allBranchesData = [];
 let currentSelectedUserId = null; 
 
 // EVENT LISTENER DROPDOWN PRODUK
-productSelect.addEventListener('change', (e) => {
-    localStorage.setItem('currentProductView', e.target.value);
-    window.location.reload();
-});
+if (productSelect) {
+    productSelect.addEventListener('change', (e) => {
+        localStorage.setItem('currentProductView', e.target.value);
+        window.location.reload();
+    });
+}
 
 // DISPLAY DATA
 async function displayBranchData(selectedUserId) {
@@ -52,10 +53,10 @@ async function displayBranchData(selectedUserId) {
     if (!data) return;
 
     alamatValue.textContent = data.alamat;
-    if (data.status.toLowerCase() === 'aktif') {
+    if (data.status && data.status.toLowerCase() === 'aktif') {
         statusValue.innerHTML = `<span class="status-Active">Aktif</span>`;
     } else {
-        statusValue.innerHTML = `<span class="status-Pending">${data.status}</span>`;
+        statusValue.innerHTML = `<span class="status-Pending">${data.status || 'Non-Aktif'}</span>`;
     }
 
     stokValue.textContent = "Menghitung...";
@@ -92,9 +93,17 @@ function populateDropdown() {
         allBranchesData = []; 
         cabangSelect.innerHTML = ''; 
         if (querySnapshot.empty) {
-            cabangSelect.innerHTML = '<option>Belum ada cabang terdaftar</option>';
+            cabangSelect.innerHTML = '<option value="">Belum ada cabang terdaftar</option>';
+            // Matikan tombol hapus jika tidak ada data
+            btnDeleteCabang.disabled = true;
+            btnDeleteCabang.style.opacity = "0.5";
             return;
         }
+        
+        // Aktifkan tombol
+        btnDeleteCabang.disabled = false;
+        btnDeleteCabang.style.opacity = "1";
+
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             const id = doc.id; 
@@ -104,6 +113,8 @@ function populateDropdown() {
             option.textContent = data.namaCabang; 
             cabangSelect.appendChild(option);
         });
+        
+        // Pilih otomatis cabang pertama atau yang terakhir dipilih
         if (allBranchesData.length > 0) {
             if (currentSelectedUserId && allBranchesData.find(b => b.id === currentSelectedUserId)) {
                 cabangSelect.value = currentSelectedUserId;
@@ -117,6 +128,47 @@ function populateDropdown() {
 
 document.addEventListener('DOMContentLoaded', populateDropdown);
 cabangSelect.addEventListener('change', (e) => { displayBranchData(e.target.value); });
+
+// ============================================
+// FUNGSI HAPUS CABANG (BARU)
+// ============================================
+btnDeleteCabang.addEventListener('click', () => {
+    if (!currentSelectedUserId) {
+        Swal.fire('Error', 'Silakan pilih cabang terlebih dahulu.', 'error');
+        return;
+    }
+
+    const selectedBranchName = cabangSelect.options[cabangSelect.selectedIndex].text;
+
+    Swal.fire({
+        title: 'Hapus Cabang?',
+        text: `Anda yakin ingin menghapus "${selectedBranchName}"? Data ini tidak dapat dikembalikan!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus Permanen',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Hapus dari Firestore
+            usersRef.doc(currentSelectedUserId).delete()
+                .then(() => {
+                    Swal.fire(
+                        'Dihapus!',
+                        'Data cabang telah dihapus.',
+                        'success'
+                    ).then(() => {
+                        // Refresh halaman agar bersih
+                        window.location.reload();
+                    });
+                })
+                .catch((error) => {
+                    Swal.fire('Error', error.message, 'error');
+                });
+        }
+    });
+});
 
 // FUNGSI EDIT (Alamat & Status)
 async function showEditPopup(title, inputValue) {
