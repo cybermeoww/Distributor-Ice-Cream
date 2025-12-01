@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="admin-style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="admin-wrapper">
         <nav class="sidebar">
@@ -35,7 +37,11 @@
                     <span>Selamat Datang di Panel Admin GLACIER</span>
                 </div>
             </header>
-
+            <section class="card-container" style="display: block;">
+                <div class="card" style="width: auto;">
+                    <h3>"Glacier dua rasa Segar tak terkalahkan! Durian - mantap! Jagung - ceria! Glacier... PILIHAN KITA!"</h3>
+                </div>
+            </section>
             <section class="greeting-cards-container">
                 <div class="greeting-card">
                     <img src="asset/Jagung.jpeg" alt="Es Krim Jagung">
@@ -53,21 +59,22 @@
                     </div>
                 </div>
             </section>
-<!-- 
-            <section class="greeting-caption">
+            
+            <!-- <section class="greeting-caption">
                 <h3><i class="fas fa-quote-left" style="color: #ccc;"></i> Selamat Bertugas, Admin!</h3>
                 <p>Panel ini adalah pusat kendali distribusi GLACIER. Pastikan setiap cabang mendapatkan pasokan tepat waktu dan setiap pengiriman terpantau dengan baik.</p>
-                <p style="margin-top: 10px; font-weight: 500; color: #3a7bd5;">Gunakan menu navigasi di samping (dilindungi password) untuk mulai mengelola.</p>
-            </section> -->
+                <p style="margin-top: 10px; font-weight: 500; color: #3a7bd5;">Gunakan menu navigasi di samping (dilindungi password) untuk mulai mengelola.</p> -->
+            </section>
 
         </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script src="admin-greeting.js"></script>
 </body>
+
 </html>

@@ -93,9 +93,10 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 .card h3 {
-    margin-top: 0;
+    margin-top: 30px;
     font-size: 1rem;
     color: #777;
+    text-align: center;
     text-transform: uppercase;
 }
 .card .value {
