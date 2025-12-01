@@ -324,7 +324,7 @@ span.status-Active { background-color: #e6f7f0; color: #00875a; }
     overflow: hidden; /* Agar gambar tidak keluar dari border radius */
     box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Bayangan lembut */
     flex: 1 1 650px; /* Lebar fleksibel, minimal 350px */
-    max-width: 500px; /* Lebar maksimal */
+    max-width: 300px; /* Lebar maksimal */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: center;
 }
