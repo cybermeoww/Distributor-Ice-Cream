@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cybermeoww.github.io/Distributor-Ice-Cream/sitemap.xml
