@@ -356,9 +356,9 @@ footer {
         padding: 0 20px; 
     }
 
-    .nav-menu {
-        /* Sembunyikan menu di HP (jika mau, tapi kita kecilkan saja) */
-    }
+    /* .nav-menu {
+        
+    } */
 
     .nav-link {
         padding: 0 0.6rem; 
@@ -419,4 +419,23 @@ footer {
         justify-content: flex-start;
         margin-left: -10px;
     }
+}
+
+/* Style untuk Input Kuantitas di Keranjang */
+.cart-qty-input {
+    width: 60px;           /* Lebar kotak */
+    text-align: center;    /* Angka di tengah */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 0 5px;         /* Jarak dari tombol + dan - */
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Hilangkan panah default browser di input number (Opsional, biar rapi) */
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
